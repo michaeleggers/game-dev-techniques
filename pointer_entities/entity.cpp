@@ -37,7 +37,7 @@ void Entity::update() {
       dir = Vector2Normalize(dir);
       m_velocity = dir;
     }
-    Vector2Scale(m_velocity, ENEMY_SPEED);
+    m_velocity = Vector2Scale(m_velocity, ENEMY_SPEED);
     m_position = Vector2Add(m_position, m_velocity);
   } break;
 

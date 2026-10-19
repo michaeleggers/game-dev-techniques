@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
-#define ENEMY_SPEED (1.5f)
+#define ENEMY_SPEED (1.0f)
 #define PLAYER_SPEED (2.0f)
 
 enum EntityType { PLAYER, ENEMY };
