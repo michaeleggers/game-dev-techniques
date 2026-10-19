@@ -4,9 +4,6 @@
 #include <raylib.h>
 #include <raymath.h>
 
-#define ENEMY_SPEED (1.0f)
-#define PLAYER_SPEED (2.0f)
-
 enum EntityType { PLAYER, ENEMY, TURRET };
 
 class Entity {
@@ -25,10 +22,11 @@ public:
   Vector2 m_velocity;
   Entity *m_target;
   EntityType m_type;
+  f32 m_speed = 0.0f;
+  Color m_color = YELLOW;
 };
 
 constexpr u32 MAX_ENTITIES = 128;
-constexpr u32 MAX_FREE_SLOTS = 32;
 
 class EntityManager {
 
@@ -41,9 +39,17 @@ public:
 
   void kill_entity(Entity *entity);
 
+  u32 capacity() const;
+  bool is_alive(u32 slot) const;
+  Entity *at(u32 slot);
+
 private:
   EntityManager() = default; // Private because Singleton class.
 
   Entity m_entities[MAX_ENTITIES];
-  bool m_alive[MAX_ENTITIES];
+
+  // ` = {}`: Not strictly necessary at this point. But
+  //          if EntityManager was to become a real
+  //          Ctor this array would not default to 0 (=false).
+  bool m_alive[MAX_ENTITIES] = {};
 };

@@ -25,21 +25,13 @@ void Entity::follow(Entity *target) { m_target = target; }
 void Entity::unfollow() {
   if (m_target) {
     m_target = nullptr;
+    m_speed = 0.0f;
+    m_velocity = Vector2{0.0f, 0.0f};
   }
 }
 
 void Entity::update() {
   switch (m_type) {
-
-  case ENEMY: {
-    if (m_target) {
-      Vector2 dir = Vector2Subtract(m_target->m_position, m_position);
-      dir = Vector2Normalize(dir);
-      m_velocity = dir;
-    }
-    m_velocity = Vector2Scale(m_velocity, ENEMY_SPEED);
-    m_position = Vector2Add(m_position, m_velocity);
-  } break;
 
   case PLAYER: {
     // Reset velocity to 0 so that if no key
@@ -59,9 +51,19 @@ void Entity::update() {
       m_velocity.y = 1;
     }
     m_velocity = Vector2Normalize(m_velocity);
-    m_velocity = Vector2Scale(m_velocity, PLAYER_SPEED);
+    m_velocity = Vector2Scale(m_velocity, m_speed);
 
     // Logic
+    m_position = Vector2Add(m_position, m_velocity);
+  } break;
+
+  case ENEMY: {
+    if (m_target) {
+      Vector2 dir = Vector2Subtract(m_target->m_position, m_position);
+      dir = Vector2Normalize(dir);
+      m_velocity = dir;
+    }
+    m_velocity = Vector2Scale(m_velocity, m_speed);
     m_position = Vector2Add(m_position, m_velocity);
   } break;
 
@@ -72,8 +74,8 @@ void Entity::update() {
 }
 
 EntityManager *EntityManager::instance() {
-  static EntityManager *instance = new EntityManager();
-  return instance;
+  static EntityManager instance{};
+  return &instance;
 }
 
 Entity *EntityManager::create_entity(EntityType type, const Vector2 &position,
@@ -86,7 +88,10 @@ Entity *EntityManager::create_entity(EntityType type, const Vector2 &position,
     }
   }
 
-  assert(free < MAX_ENTITIES);
+  if (free >= MAX_ENTITIES) {
+    assert(false && "Entity Manager: no more space left for more entities.");
+    return nullptr;
+  }
 
   Entity *entity = &m_entities[free];
   *entity = Entity(type, position, velocity);
@@ -100,4 +105,16 @@ void EntityManager::kill_entity(Entity *entity) {
   u32 slot_number = (u32)(entity - &m_entities[0]);
   printf("[Entity Manager]: Killing entity at index: %d\n", slot_number);
   m_alive[slot_number] = false;
+}
+
+u32 EntityManager::capacity() const { return MAX_ENTITIES; }
+
+bool EntityManager::is_alive(u32 slot) const {
+  assert(slot < MAX_ENTITIES);
+  return m_alive[slot];
+}
+
+Entity *EntityManager::at(u32 slot) {
+  assert(slot < MAX_ENTITIES);
+  return &m_entities[slot];
 }

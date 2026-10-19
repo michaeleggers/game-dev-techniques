@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(pointer_entities
     main.cpp
     entity.cpp
+    game.cpp
 )
 
 target_include_directories(pointer_entities PUBLIC
@@ -14,5 +15,5 @@ target_include_directories(pointer_entities PUBLIC
 )
 
 target_link_libraries(pointer_entities
-    PRIVATE raylib
+    PRIVATE raylib gamedev_compile_options
 )
