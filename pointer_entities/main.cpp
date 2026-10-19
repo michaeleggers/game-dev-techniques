@@ -21,9 +21,14 @@ int main(int argc, char **argv) {
   game.init();
 
   // Main game loop
+  f32 start_time = 0.0f;
+  f32 end_time = GetTime();
   while (!WindowShouldClose()) // Detect window close button or ESC key
   {
-    game.update_and_render(16.67f); // TODO: Measure dt.
+    f32 frame_time_ms = (end_time - start_time) * 1000.0f;
+    start_time = GetTime();
+    game.update_and_render(frame_time_ms);
+    end_time = GetTime();
   }
 
   // Cleanup
