@@ -1,5 +1,6 @@
 #include <raylib.h>
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -61,7 +62,49 @@ void Game::update_and_render(f32 dt) {
     if (!em->is_alive(i)) {
       continue;
     }
-    em->at(i)->update();
+
+    Entity *entity = em->at(i);
+    switch (entity->m_type) {
+
+    case PLAYER: {
+      // Reset velocity to 0 so that if no key
+      // is being pressed the player stands still.
+      entity->m_velocity = Vector2{0.0f, 0.0f};
+
+      if (IsKeyDown(KEY_A)) {
+        entity->m_velocity.x = -1;
+      }
+      if (IsKeyDown(KEY_D)) {
+        entity->m_velocity.x = 1;
+      }
+      if (IsKeyDown(KEY_W)) {
+        entity->m_velocity.y = -1;
+      }
+      if (IsKeyDown(KEY_S)) {
+        entity->m_velocity.y = 1;
+      }
+      entity->m_velocity = Vector2Normalize(entity->m_velocity);
+      entity->m_velocity = Vector2Scale(entity->m_velocity, entity->m_speed);
+
+      // Logic
+      entity->m_position = Vector2Add(entity->m_position, entity->m_velocity);
+    } break;
+
+    case ENEMY: {
+      if (entity->m_target) {
+        Vector2 dir =
+            Vector2Subtract(entity->m_target->m_position, entity->m_position);
+        dir = Vector2Normalize(dir);
+        entity->m_velocity = dir;
+      }
+      entity->m_velocity = Vector2Scale(entity->m_velocity, entity->m_speed);
+      entity->m_position = Vector2Add(entity->m_position, entity->m_velocity);
+    } break;
+
+    default: {
+      assert(false && "Unknown entity type!");
+    }
+    }
   }
 
   // Rendition

@@ -16,7 +16,6 @@ public:
 
   void follow(Entity *target);
   void unfollow();
-  void update();
 
   Vector2 m_position;
   Vector2 m_velocity;

@@ -30,49 +30,6 @@ void Entity::unfollow() {
   }
 }
 
-void Entity::update() {
-  switch (m_type) {
-
-  case PLAYER: {
-    // Reset velocity to 0 so that if no key
-    // is being pressed the player stands still.
-    m_velocity = Vector2{0.0f, 0.0f};
-
-    if (IsKeyDown(KEY_A)) {
-      m_velocity.x = -1;
-    }
-    if (IsKeyDown(KEY_D)) {
-      m_velocity.x = 1;
-    }
-    if (IsKeyDown(KEY_W)) {
-      m_velocity.y = -1;
-    }
-    if (IsKeyDown(KEY_S)) {
-      m_velocity.y = 1;
-    }
-    m_velocity = Vector2Normalize(m_velocity);
-    m_velocity = Vector2Scale(m_velocity, m_speed);
-
-    // Logic
-    m_position = Vector2Add(m_position, m_velocity);
-  } break;
-
-  case ENEMY: {
-    if (m_target) {
-      Vector2 dir = Vector2Subtract(m_target->m_position, m_position);
-      dir = Vector2Normalize(dir);
-      m_velocity = dir;
-    }
-    m_velocity = Vector2Scale(m_velocity, m_speed);
-    m_position = Vector2Add(m_position, m_velocity);
-  } break;
-
-  default: {
-    assert(false && "Unknown entity type!");
-  }
-  }
-}
-
 EntityManager *EntityManager::instance() {
   static EntityManager instance{};
   return &instance;
