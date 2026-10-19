@@ -4,7 +4,7 @@
 #include <raylib.h>
 #include <raymath.h>
 
-enum EntityType { PLAYER, ENEMY, TURRET };
+enum EntityType { PLAYER, ENEMY, TURRET, PROJECTILE };
 
 class Entity {
 public:
@@ -18,14 +18,18 @@ public:
   void unfollow();
 
   Vector2 m_position;
-  Vector2 m_velocity;
+  Vector2 m_velocity; // FIXME: Used as direction.
   Entity *m_target;
   EntityType m_type;
   f32 m_speed = 0.0f;
   Color m_color = YELLOW;
+  f32 m_cooldown = 0.0f;
+  f32 m_scale = 10.0f;
+  f32 m_accumulator = 0.0f;
+  f32 m_health = 100.0f;
 };
 
-constexpr u32 MAX_ENTITIES = 128;
+constexpr u32 MAX_ENTITIES = 512;
 
 class EntityManager {
 

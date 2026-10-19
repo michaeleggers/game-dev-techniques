@@ -3,8 +3,6 @@
 #include "common.h"
 #include "entity.h"
 
-#define MAX_ENEMIES 16
-
 class Game {
 
 public:
@@ -16,4 +14,5 @@ public:
 
 private:
   Entity *m_player = nullptr;
+  Entity *m_turrets[4] = {nullptr};
 };

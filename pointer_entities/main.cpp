@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   // Main game loop
   while (!WindowShouldClose()) // Detect window close button or ESC key
   {
-    game.update_and_render(16.0f); // TODO: Measure dt.
+    game.update_and_render(16.67f); // TODO: Measure dt.
   }
 
   // Cleanup
