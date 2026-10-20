@@ -10,14 +10,15 @@
 #include "raymath.h"
 #include "window.h"
 
-#define MAX_ENEMIES 1
+#define MAX_ENEMIES 3
 #define PLAYER_SPEED 1.5f
-#define ENEMY_MIN_SPEED 0.8f
-#define ENEMY_MAX_SPEED 1.3f
+#define ENEMY_MIN_SPEED 0.5f
+#define ENEMY_MAX_SPEED 2.0f
 #define TURRET_FIRE_SPEED_MS 1000.0f
 #define TURRET_SIZE 10.0f
 #define PROJECTILE_SPEED 1.0f
-#define RUNNING_SHOES_PICKUP_SPAWN_MS 5000.0f
+#define RUNNING_SHOES_PICKUP_SPAWN_MS 2000.0f
+#define SHOES_TIME_TO_LIVE 3000.0f
 #define MARGIN 10.0f
 
 static f32 rand_between(f32 min, f32 max) {
@@ -160,7 +161,7 @@ void Game::update_and_render(Window window, f32 dt) {
         Entity* pickup = em->create_entity(
             PICKUP_RUNNING_SHOES, Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
         pickup->m_color = GREEN;
-        pickup->m_time_to_live_ms = 3000.0f;
+        pickup->m_time_to_live_ms = SHOES_TIME_TO_LIVE;
         m_running_shoes_accum = 0.0f;
     }
 
@@ -274,11 +275,15 @@ void Game::update_and_render(Window window, f32 dt) {
 
                 // Draw line from entity to its target if it has one.
                 if (entity->m_target) {
-                    Color line_color = GRAY;
+                    // Default target line properties.
+                    Color line_color = RAYWHITE;
+                    f32 line_width = 1.0f;
+                    // Give enemies a dedicated target line.
                     if (entity->m_type == ENEMY) {
-                        line_color = WHITE;
+                        line_color = RED;
+                        line_width = 3.0f;
                     }
-                    DrawLineEx(entity->m_position, entity->m_target->m_position, 1.0f, line_color);
+                    DrawLineEx(entity->m_position, entity->m_target->m_position, line_width, line_color);
                 }
             }
         }
