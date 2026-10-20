@@ -37,10 +37,10 @@ void Game::init() {
     m_turrets[1] = em->create_entity(TURRET, Vector2{900.0f, 10.0f});
     m_turrets[2] = em->create_entity(TURRET, Vector2{10.0f, 500.0f});
     m_turrets[3] = em->create_entity(TURRET, Vector2{900.0f, 500.0f});
-    m_turrets[0]->m_color = GREEN;
-    m_turrets[1]->m_color = GREEN;
-    m_turrets[2]->m_color = GREEN;
-    m_turrets[3]->m_color = GREEN;
+    m_turrets[0]->m_color = BLACK;
+    m_turrets[1]->m_color = BLACK;
+    m_turrets[2]->m_color = BLACK;
+    m_turrets[3]->m_color = BLACK;
     m_turrets[0]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[1]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[2]->m_cooldown = TURRET_FIRE_SPEED_MS;
@@ -121,7 +121,7 @@ void Game::update_and_render(f32 dt) {
     if (m_running_shoes_accum >= RUNNING_SHOES_PICKUP_SPAWN_MS) {
         Entity* pickup =
             em->create_entity(PICKUP_RUNNING_SHOES, Vector2{(f32)GetRandomValue(0, 960), (f32)GetRandomValue(0, 540)});
-        pickup->m_color = BROWN;
+        pickup->m_color = GREEN;
         pickup->m_time_to_live_ms = 3000.0f;
         m_running_shoes_accum = 0.0f;
     }
