@@ -9,9 +9,8 @@ enum EntityType { PLAYER, ENEMY, TURRET, PROJECTILE, PICKUP_RUNNING_SHOES };
 class Entity {
 public:
     Entity() = default; // trivial Ctor. Does nothing.
-    Entity(EntityType type);
-    Entity(EntityType type, const Vector2& position);
-    Entity(EntityType type, const Vector2& position, const Vector2& velocity);
+    Entity(EntityType type, const Vector2& position = Vector2{0.0f, 0.0f},
+           const Vector2& direction = Vector2{0.0f, 0.0f});
     ~Entity() = default;
 
     void follow(Entity* target);

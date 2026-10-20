@@ -4,12 +4,6 @@
 #include <raylib.h>
 #include <stdio.h>
 
-Entity::Entity(EntityType type)
-    : m_type(type), m_position(Vector2{0.0f, 0.0f}), m_direction(Vector2{0.0f, 0.0f}), m_target(nullptr) {}
-
-Entity::Entity(EntityType type, const Vector2& position)
-    : m_type(type), m_position(position), m_direction(Vector2{0.0f, 0.0f}), m_target(nullptr) {}
-
 Entity::Entity(EntityType type, const Vector2& position, const Vector2& direction) {
     m_type = type;
     m_position = position;
