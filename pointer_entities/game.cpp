@@ -74,7 +74,7 @@ void Game::update_and_render(f32 dt) {
         else if (entity->m_type == TURRET) {
             if (entity->m_accumulator >= entity->m_cooldown) {
                 if (m_player) {
-                    printf("[TURRET] with id:%d is firing.\n", em->slot(entity));
+                    // printf("[TURRET] with id:%d is firing.\n", em->slot(entity));
                     Entity* projectile = em->create_entity(PROJECTILE, entity->m_position);
                     projectile->m_target = m_player;
                     projectile->m_speed = 1.0f;
@@ -169,7 +169,7 @@ void Game::update_and_render(f32 dt) {
 
             case ENEMY: {
                 if (entity->m_target) {
-                    printf("[ENEMY]: own slot: %d, target slot: %d\n", em->slot(entity), em->slot(entity->m_target));
+                    // printf("[ENEMY]: own slot: %d, target slot: %d\n", em->slot(entity), em->slot(entity->m_target));
                     Vector2 dir = Vector2Subtract(entity->m_target->m_position, entity->m_position);
                     dir = Vector2Normalize(dir);
                     entity->m_velocity = dir;
