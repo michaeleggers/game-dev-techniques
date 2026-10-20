@@ -45,6 +45,7 @@ public:
   u32 capacity() const;
   bool is_alive(u32 slot) const;
   Entity *at(u32 slot);
+  u32 slot(Entity *entity) const;
 
 private:
   EntityManager() = default; // Private because Singleton class.

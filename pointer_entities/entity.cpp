@@ -75,3 +75,8 @@ Entity *EntityManager::at(u32 slot) {
   assert(slot < MAX_ENTITIES);
   return &m_entities[slot];
 }
+
+u32 EntityManager::slot(Entity *entity) const {
+  u32 index = (u32)(entity - &m_entities[0]);
+  return index;
+}
