@@ -18,6 +18,7 @@
 #define TURRET_SIZE 10.0f
 #define PROJECTILE_SPEED 1.0f
 #define RUNNING_SHOES_PICKUP_SPAWN_MS 5000.0f
+#define MARGIN 10.0f
 
 static f32 rand_between(f32 min, f32 max) {
     f32 r = (f32)rand() / (f32)RAND_MAX;
@@ -35,6 +36,8 @@ void Game::init(Window window) {
 
     EntityManager* em = EntityManager::instance();
 
+    m_font = LoadFont("./assts/fonts/Inter-Bold.ttf");
+
     m_player = em->create_entity(PLAYER);
     m_player->m_position = Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f};
     m_player->m_speed = PLAYER_SPEED;
@@ -47,11 +50,11 @@ void Game::init(Window window) {
         enemy->m_color = YELLOW;
     }
 
-    m_turrets[0] = em->create_entity(TURRET, Vector2{TURRET_SIZE, TURRET_SIZE});
-    m_turrets[1] = em->create_entity(TURRET, Vector2{(f32)window.width - TURRET_SIZE, TURRET_SIZE});
-    m_turrets[2] = em->create_entity(TURRET, Vector2{TURRET_SIZE, (f32)window.height - TURRET_SIZE});
-    m_turrets[3] =
-        em->create_entity(TURRET, Vector2{(f32)window.width - TURRET_SIZE, (f32)window.height - TURRET_SIZE});
+    m_turrets[0] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
+    m_turrets[1] = em->create_entity(TURRET, Vector2{(f32)window.width - TURRET_SIZE - MARGIN, TURRET_SIZE + MARGIN});
+    m_turrets[2] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
+    m_turrets[3] = em->create_entity(
+        TURRET, Vector2{(f32)window.width - TURRET_SIZE - MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
     m_turrets[0]->m_color = BLACK;
     m_turrets[1]->m_color = BLACK;
     m_turrets[2]->m_color = BLACK;
@@ -71,6 +74,11 @@ void Game::update_and_render(Window window, f32 dt) {
     // Logic: If player gets close to enemy, the enemy starts to
     //        follow the player.
     EntityManager* em = EntityManager::instance();
+
+    // Press TAB to draw debug info.
+    if (IsKeyPressed(KEY_TAB)) {
+        m_draw_debug = !m_draw_debug;
+    }
 
     // 1st pass: *think*.
     for (u32 i = 0; i < em->capacity(); i++) {
@@ -252,10 +260,30 @@ void Game::update_and_render(Window window, f32 dt) {
             }
 
             Entity* entity = em->at(i);
+
+            // Draw the entity
             DrawCircleV(entity->m_position, entity->m_scale, entity->m_color);
+
+            if (m_draw_debug) {
+
+                // Draw entity's slot-number next to it
+                u32 slot_number = em->slot(entity);
+                char text_buffer[32] = {};
+                snprintf(text_buffer, 32, "%d", slot_number);
+                DrawTextEx(m_font, text_buffer, entity->m_position, 24.0f, 1.0f, WHITE);
+
+                // Draw line from entity to its target if it has one.
+                if (entity->m_target) {
+                    Color line_color = GRAY;
+                    if (entity->m_type == ENEMY) {
+                        line_color = WHITE;
+                    }
+                    DrawLineEx(entity->m_position, entity->m_target->m_position, 1.0f, line_color);
+                }
+            }
         }
 
-        // Draw overlays
+        // Draw player overlays
 
         // Player health
         if (m_player) {
