@@ -29,6 +29,14 @@ void Entity::unfollow() {
     }
 }
 
+void Entity::set_kill_flag() {
+    m_kill_flag = true;
+}
+
+bool Entity::is_kill_flag_set() {
+    return m_kill_flag;
+}
+
 EntityManager* EntityManager::instance() {
     static EntityManager instance{};
     return &instance;

@@ -16,6 +16,8 @@ public:
 
     void follow(Entity* target);
     void unfollow();
+    void set_kill_flag();
+    bool is_kill_flag_set();
 
     Vector2 m_position;
     Vector2 m_velocity; // FIXME: Used as direction.
@@ -29,6 +31,7 @@ public:
     f32 m_health = 100.0f;
     f32 m_speed_mult = 2.0f;
     f32 m_time_to_live_ms = 10000.0f;
+    bool m_kill_flag = false;
 };
 
 constexpr u32 MAX_ENTITIES = 256;

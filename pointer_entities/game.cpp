@@ -20,6 +20,12 @@ static f32 rand_between(f32 min, f32 max) {
     return r * range + min;
 }
 
+static bool collision(const Entity* a, const Entity* b) {
+    f32 radius2 = (a->m_scale + b->m_scale);
+    radius2 *= radius2;
+    return Vector2DistanceSqr(a->m_position, b->m_position) <= radius2;
+}
+
 void Game::init() {
     EntityManager* em = EntityManager::instance();
 
@@ -91,20 +97,22 @@ void Game::update_and_render(f32 dt) {
             // Kill projectile if out of bounds.
             if (entity->m_position.x >= 1000 || entity->m_position.x < -10.0f || entity->m_position.y >= 1000 ||
                 entity->m_position.y < -10) {
-                em->kill_entity(entity);
+                entity->set_kill_flag();
+                entity = nullptr;
             }
 
-            // Check if it hit player
-            if (m_player) {
-                f32 radius2 = (entity->m_scale + m_player->m_scale);
-                radius2 *= radius2;
-                if (Vector2DistanceSqr(entity->m_position, entity->m_target->m_position) <= radius2) {
-                    // Hit!
-                    // Remove this projectile
-                    em->kill_entity(entity);
+            if (entity) {
+                // Check if it hit other thing (the Player).
+                if (entity->m_target) {
+                    if (collision(entity, entity->m_target)) {
+                        // Hit!
 
-                    // Lower health of target.
-                    entity->m_target->m_health -= 10.0f;
+                        // Lower health of target.
+                        entity->m_target->m_health -= 10.0f;
+
+                        // Remove this projectile
+                        entity->set_kill_flag();
+                    }
                 }
             }
         }
@@ -129,18 +137,32 @@ void Game::update_and_render(f32 dt) {
     // Also let the player *think* (react to hits).
     if (m_player) {
         if (m_player->m_health <= 0.0f) {
-            em->kill_entity(m_player);
-            m_player = nullptr;
+            m_player->set_kill_flag();
         }
     }
 
     // 2nd pass: update positions.
+    // Check if player should be killed here because
+    // we need to assing nullptr.
+    if (m_player) {
+        if (m_player->is_kill_flag_set()) {
+            em->kill_entity(m_player);
+            m_player = nullptr;
+        }
+    }
     for (u32 i = 0; i < em->capacity(); i++) {
         if (!em->is_alive(i)) {
             continue;
         }
 
         Entity* entity = em->at(i);
+
+        if (entity->is_kill_flag_set()) {
+            em->kill_entity(entity);
+            entity = nullptr;
+            continue;
+        }
+
         switch (entity->m_type) {
 
             case PLAYER: {
@@ -191,7 +213,12 @@ void Game::update_and_render(f32 dt) {
             case PICKUP_RUNNING_SHOES: {
                 // If no-one picked it up after some time, despawn.
                 if (entity->m_time_to_live_ms <= 0.0f) {
-                    em->kill_entity(entity);
+                    em->kill_entity(entity); // kill directly.
+                } else {
+                    if (m_player) {
+                        if (collision(entity, m_player)) {
+                        }
+                    }
                 }
             } break;
 
@@ -215,6 +242,7 @@ void Game::update_and_render(f32 dt) {
         }
 
         // Draw overlays
+
         // Player health
         if (m_player) {
             f32 health_bar_width = m_player->m_scale * 5.0f;
