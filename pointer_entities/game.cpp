@@ -276,7 +276,7 @@ void Game::update_and_render(Window window, f32 dt) {
                 // Draw line from entity to its target if it has one.
                 if (entity->m_target) {
                     // Default target line properties.
-                    Color line_color = RAYWHITE;
+                    Color line_color = GRAY;
                     f32 line_width = 1.0f;
                     // Give enemies a dedicated target line.
                     if (entity->m_type == ENEMY) {
