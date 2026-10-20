@@ -5,15 +5,15 @@
 #include <stdio.h>
 
 Entity::Entity(EntityType type)
-    : m_type(type), m_position(Vector2{0.0f, 0.0f}), m_velocity(Vector2{0.0f, 0.0f}), m_target(nullptr) {}
+    : m_type(type), m_position(Vector2{0.0f, 0.0f}), m_direction(Vector2{0.0f, 0.0f}), m_target(nullptr) {}
 
 Entity::Entity(EntityType type, const Vector2& position)
-    : m_type(type), m_position(position), m_velocity(Vector2{0.0f, 0.0f}), m_target(nullptr) {}
+    : m_type(type), m_position(position), m_direction(Vector2{0.0f, 0.0f}), m_target(nullptr) {}
 
-Entity::Entity(EntityType type, const Vector2& position, const Vector2& velocity) {
+Entity::Entity(EntityType type, const Vector2& position, const Vector2& direction) {
     m_type = type;
     m_position = position;
-    m_velocity = velocity;
+    m_direction = direction;
     m_target = nullptr;
 }
 
@@ -24,8 +24,7 @@ void Entity::follow(Entity* target) {
 void Entity::unfollow() {
     if (m_target) {
         m_target = nullptr;
-        m_speed = 0.0f;
-        m_velocity = Vector2{0.0f, 0.0f};
+        m_direction = Vector2{0.0f, 0.0f};
     }
 }
 
@@ -33,7 +32,7 @@ void Entity::set_kill_flag() {
     m_kill_flag = true;
 }
 
-bool Entity::is_kill_flag_set() {
+bool Entity::is_kill_flag_set() const {
     return m_kill_flag;
 }
 
@@ -42,7 +41,7 @@ EntityManager* EntityManager::instance() {
     return &instance;
 }
 
-Entity* EntityManager::create_entity(EntityType type, const Vector2& position, const Vector2& velocity) {
+Entity* EntityManager::create_entity(EntityType type, const Vector2& position, const Vector2& direction) {
     u32 free = 0;
     for (; free < MAX_ENTITIES; free++) {
         if (!m_alive[free]) {
@@ -57,7 +56,7 @@ Entity* EntityManager::create_entity(EntityType type, const Vector2& position, c
     }
 
     Entity* entity = &m_entities[free];
-    *entity = Entity(type, position, velocity);
+    *entity = Entity(type, position, direction);
 
     printf("[Entity Manager]: Created new entity at index: %d\n", free);
 
@@ -66,6 +65,12 @@ Entity* EntityManager::create_entity(EntityType type, const Vector2& position, c
 
 void EntityManager::kill_entity(Entity* entity) {
     u32 slot_number = (u32)(entity - &m_entities[0]);
+
+    assert(slot_number < MAX_ENTITIES);
+    // Detect  double-free: If an entity was killed in that slot
+    // before its alive flag should be false!
+    assert(m_alive[slot_number]);
+
     printf("[Entity Manager]: Killing entity at index: %d\n", slot_number);
     m_alive[slot_number] = false;
 }
@@ -84,7 +89,7 @@ Entity* EntityManager::at(u32 slot) {
     return &m_entities[slot];
 }
 
-u32 EntityManager::slot(Entity* entity) const {
+u32 EntityManager::slot(const Entity* entity) const {
     u32 index = (u32)(entity - &m_entities[0]);
     return index;
 }

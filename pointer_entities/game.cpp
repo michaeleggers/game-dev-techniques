@@ -10,8 +10,11 @@
 #include "raymath.h"
 
 #define MAX_ENEMIES 1
-#define PLAYER_SPEED 2.0f
+#define PLAYER_SPEED 1.5f
+#define ENEMY_MIN_SPEED 0.8f
+#define ENEMY_MAX_SPEED 1.3f
 #define TURRET_FIRE_SPEED_MS 1000.0f
+#define PROJECTILE_SPEED 1.0f
 #define RUNNING_SHOES_PICKUP_SPAWN_MS 5000.0f
 
 static f32 rand_between(f32 min, f32 max) {
@@ -35,7 +38,7 @@ void Game::init() {
 
     for (u32 i = 0; i < MAX_ENEMIES; i++) {
         Entity* enemy = em->create_entity(ENEMY, Vector2{(f32)GetRandomValue(0, 960), (f32)GetRandomValue(0, 540)});
-        enemy->m_speed = rand_between(0.8f, 1.8f);
+        enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
         enemy->m_color = YELLOW;
     }
 
@@ -83,25 +86,23 @@ void Game::update_and_render(f32 dt) {
                     // printf("[TURRET] with id:%d is firing.\n", em->slot(entity));
                     Entity* projectile = em->create_entity(PROJECTILE, entity->m_position);
                     projectile->m_target = m_player;
-                    projectile->m_speed = 1.0f;
+                    projectile->m_speed = PROJECTILE_SPEED;
                     projectile->m_scale = 5.0f;
                     projectile->m_color = PINK;
-                    projectile->m_velocity = Vector2Subtract(projectile->m_target->m_position, entity->m_position);
-                    projectile->m_velocity = Vector2Normalize(projectile->m_velocity);
-                    entity->m_accumulator = 0.0f;
+                    projectile->m_direction = Vector2Subtract(projectile->m_target->m_position, entity->m_position);
+                    projectile->m_direction = Vector2Normalize(projectile->m_direction);
                 }
+                entity->m_accumulator = 0.0f;
             }
         }
 
         else if (entity->m_type == PROJECTILE) {
+
             // Kill projectile if out of bounds.
             if (entity->m_position.x >= 1000 || entity->m_position.x < -10.0f || entity->m_position.y >= 1000 ||
                 entity->m_position.y < -10) {
                 entity->set_kill_flag();
-                entity = nullptr;
-            }
-
-            if (entity) {
+            } else {
                 // Check if it hit other thing (the Player).
                 if (entity->m_target) {
                     if (collision(entity, entity->m_target)) {
@@ -119,8 +120,19 @@ void Game::update_and_render(f32 dt) {
 
         else if (entity->m_type == PICKUP_RUNNING_SHOES) {
             // TODO: collide with player and speed them up.
-            //
+
+            // If no-one picked it up after some time, despawn.
             entity->m_time_to_live_ms -= dt;
+            if (entity->m_time_to_live_ms <= 0.0f) {
+                entity->set_kill_flag();
+            } else {
+                if (m_player) {
+                    if (collision(entity, m_player)) {
+                        m_player->m_speed *= entity->m_speed_mult;
+                        entity->set_kill_flag();
+                    }
+                }
+            }
         }
     }
 
@@ -159,34 +171,34 @@ void Game::update_and_render(f32 dt) {
 
         if (entity->is_kill_flag_set()) {
             em->kill_entity(entity);
-            entity = nullptr;
             continue;
         }
 
         switch (entity->m_type) {
 
             case PLAYER: {
-                // Reset velocity to 0 so that if no key
+                // Reset direction to 0 so that if no key
                 // is being pressed the player stands still.
-                entity->m_velocity = Vector2{0.0f, 0.0f};
+                entity->m_direction = Vector2{0.0f, 0.0f};
 
                 if (IsKeyDown(KEY_A)) {
-                    entity->m_velocity.x = -1;
+                    entity->m_direction.x = -1;
                 }
                 if (IsKeyDown(KEY_D)) {
-                    entity->m_velocity.x = 1;
+                    entity->m_direction.x = 1;
                 }
                 if (IsKeyDown(KEY_W)) {
-                    entity->m_velocity.y = -1;
+                    entity->m_direction.y = -1;
                 }
                 if (IsKeyDown(KEY_S)) {
-                    entity->m_velocity.y = 1;
+                    entity->m_direction.y = 1;
                 }
-                entity->m_velocity = Vector2Normalize(entity->m_velocity);
-                entity->m_velocity = Vector2Scale(entity->m_velocity, entity->m_speed);
+                entity->m_direction = Vector2Normalize(entity->m_direction);
+                entity->m_direction = Vector2Scale(entity->m_direction, entity->m_speed);
 
                 // Logic
-                entity->m_position = Vector2Add(entity->m_position, entity->m_velocity);
+                Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
+                entity->m_position = Vector2Add(entity->m_position, velocity);
             } break;
 
             case ENEMY: {
@@ -194,10 +206,10 @@ void Game::update_and_render(f32 dt) {
                     // printf("[ENEMY]: own slot: %d, target slot: %d\n", em->slot(entity), em->slot(entity->m_target));
                     Vector2 dir = Vector2Subtract(entity->m_target->m_position, entity->m_position);
                     dir = Vector2Normalize(dir);
-                    entity->m_velocity = dir;
+                    entity->m_direction = dir;
                 }
-                entity->m_velocity = Vector2Scale(entity->m_velocity, entity->m_speed);
-                entity->m_position = Vector2Add(entity->m_position, entity->m_velocity);
+                Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
+                entity->m_position = Vector2Add(entity->m_position, velocity);
             } break;
 
             case TURRET: {
@@ -206,20 +218,12 @@ void Game::update_and_render(f32 dt) {
 
             case PROJECTILE: {
                 // Move projectile.
-                entity->m_position = Vector2Add(entity->m_position, entity->m_velocity);
+                Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
+                entity->m_position = Vector2Add(entity->m_position, velocity);
 
             } break;
 
             case PICKUP_RUNNING_SHOES: {
-                // If no-one picked it up after some time, despawn.
-                if (entity->m_time_to_live_ms <= 0.0f) {
-                    em->kill_entity(entity); // kill directly.
-                } else {
-                    if (m_player) {
-                        if (collision(entity, m_player)) {
-                        }
-                    }
-                }
             } break;
 
             default: {
