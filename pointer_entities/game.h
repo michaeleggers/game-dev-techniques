@@ -6,13 +6,14 @@
 class Game {
 
 public:
-  Game() = default;
+    Game() = default;
 
-  void init();
-  void update_and_render(f32 dt);
-  void shutdown();
+    void init();
+    void update_and_render(f32 dt);
+    void shutdown();
 
 private:
-  Entity *m_player = nullptr;
-  Entity *m_turrets[4] = {nullptr};
+    Entity* m_player = nullptr;
+    Entity* m_turrets[4] = {nullptr};
+    f32 m_running_shoes_accum = 0.0f;
 };

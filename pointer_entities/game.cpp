@@ -9,9 +9,10 @@
 #include "game.h"
 #include "raymath.h"
 
-#define MAX_ENEMIES 4
+#define MAX_ENEMIES 1
 #define PLAYER_SPEED 2.0f
 #define TURRET_FIRE_SPEED_MS 1000.0f
+#define RUNNING_SHOES_PICKUP_SPAWN_MS 5000.0f
 
 static f32 rand_between(f32 min, f32 max) {
     f32 r = (f32)rand() / (f32)RAND_MAX;
@@ -63,7 +64,7 @@ void Game::update_and_render(f32 dt) {
 
         // We want the enemies.
         if (entity->m_type == ENEMY) {
-            if (m_player) {
+            if (m_player) { // if a player exists, start to hunt it if close enough.
                 if (Vector2Distance(m_player->m_position, entity->m_position) <= 60.0f) {
                     entity->follow(m_player);
                 }
@@ -107,6 +108,22 @@ void Game::update_and_render(f32 dt) {
                 }
             }
         }
+
+        else if (entity->m_type == PICKUP_RUNNING_SHOES) {
+            // TODO: collide with player and speed them up.
+            //
+            entity->m_time_to_live_ms -= dt;
+        }
+    }
+
+    // Check if it is time to spawn new pickup items
+    m_running_shoes_accum += dt;
+    if (m_running_shoes_accum >= RUNNING_SHOES_PICKUP_SPAWN_MS) {
+        Entity* pickup =
+            em->create_entity(PICKUP_RUNNING_SHOES, Vector2{(f32)GetRandomValue(0, 960), (f32)GetRandomValue(0, 540)});
+        pickup->m_color = BROWN;
+        pickup->m_time_to_live_ms = 3000.0f;
+        m_running_shoes_accum = 0.0f;
     }
 
     // Also let the player *think* (react to hits).
@@ -152,6 +169,7 @@ void Game::update_and_render(f32 dt) {
 
             case ENEMY: {
                 if (entity->m_target) {
+                    printf("[ENEMY]: own slot: %d, target slot: %d\n", em->slot(entity), em->slot(entity->m_target));
                     Vector2 dir = Vector2Subtract(entity->m_target->m_position, entity->m_position);
                     dir = Vector2Normalize(dir);
                     entity->m_velocity = dir;
@@ -168,6 +186,13 @@ void Game::update_and_render(f32 dt) {
                 // Move projectile.
                 entity->m_position = Vector2Add(entity->m_position, entity->m_velocity);
 
+            } break;
+
+            case PICKUP_RUNNING_SHOES: {
+                // If no-one picked it up after some time, despawn.
+                if (entity->m_time_to_live_ms <= 0.0f) {
+                    em->kill_entity(entity);
+                }
             } break;
 
             default: {
