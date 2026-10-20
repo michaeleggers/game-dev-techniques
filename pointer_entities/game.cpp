@@ -213,6 +213,15 @@ void Game::update_and_render(f32 dt) {
             Entity* entity = em->at(i);
             DrawCircleV(entity->m_position, entity->m_scale, entity->m_color);
         }
+
+        // Draw overlays
+        // Player health
+        if (m_player) {
+            f32 health_bar_width = m_player->m_scale * 5.0f;
+            health_bar_width *= m_player->m_health / 100.0f;
+            DrawRectangleV(Vector2{m_player->m_position.x - health_bar_width / 2.0f, m_player->m_position.y - 25.0f},
+                           Vector2{health_bar_width, 10.0f}, GREEN);
+        }
     }
 
     EndDrawing();
