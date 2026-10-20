@@ -8,12 +8,14 @@
 #include "entity.h"
 #include "game.h"
 #include "raymath.h"
+#include "window.h"
 
 #define MAX_ENEMIES 1
 #define PLAYER_SPEED 1.5f
 #define ENEMY_MIN_SPEED 0.8f
 #define ENEMY_MAX_SPEED 1.3f
 #define TURRET_FIRE_SPEED_MS 1000.0f
+#define TURRET_SIZE 10.0f
 #define PROJECTILE_SPEED 1.0f
 #define RUNNING_SHOES_PICKUP_SPAWN_MS 5000.0f
 
@@ -29,34 +31,42 @@ static bool collision(const Entity* a, const Entity* b) {
     return Vector2DistanceSqr(a->m_position, b->m_position) <= radius2;
 }
 
-void Game::init() {
+void Game::init(Window window) {
+
     EntityManager* em = EntityManager::instance();
 
     m_player = em->create_entity(PLAYER);
+    m_player->m_position = Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f};
     m_player->m_speed = PLAYER_SPEED;
     m_player->m_color = RED;
 
     for (u32 i = 0; i < MAX_ENEMIES; i++) {
-        Entity* enemy = em->create_entity(ENEMY, Vector2{(f32)GetRandomValue(0, 960), (f32)GetRandomValue(0, 540)});
+        Entity* enemy = em->create_entity(
+            ENEMY, Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
         enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
         enemy->m_color = YELLOW;
     }
 
-    m_turrets[0] = em->create_entity(TURRET, Vector2{10.0f, 10.0f});
-    m_turrets[1] = em->create_entity(TURRET, Vector2{900.0f, 10.0f});
-    m_turrets[2] = em->create_entity(TURRET, Vector2{10.0f, 500.0f});
-    m_turrets[3] = em->create_entity(TURRET, Vector2{900.0f, 500.0f});
+    m_turrets[0] = em->create_entity(TURRET, Vector2{TURRET_SIZE, TURRET_SIZE});
+    m_turrets[1] = em->create_entity(TURRET, Vector2{(f32)window.width - TURRET_SIZE, TURRET_SIZE});
+    m_turrets[2] = em->create_entity(TURRET, Vector2{TURRET_SIZE, (f32)window.height - TURRET_SIZE});
+    m_turrets[3] =
+        em->create_entity(TURRET, Vector2{(f32)window.width - TURRET_SIZE, (f32)window.height - TURRET_SIZE});
     m_turrets[0]->m_color = BLACK;
     m_turrets[1]->m_color = BLACK;
     m_turrets[2]->m_color = BLACK;
     m_turrets[3]->m_color = BLACK;
+    m_turrets[0]->m_scale = TURRET_SIZE;
+    m_turrets[1]->m_scale = TURRET_SIZE;
+    m_turrets[2]->m_scale = TURRET_SIZE;
+    m_turrets[3]->m_scale = TURRET_SIZE;
     m_turrets[0]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[1]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[2]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[3]->m_cooldown = TURRET_FIRE_SPEED_MS;
 }
 
-void Game::update_and_render(f32 dt) {
+void Game::update_and_render(Window window, f32 dt) {
 
     // Logic: If player gets close to enemy, the enemy starts to
     //        follow the player.
@@ -139,8 +149,8 @@ void Game::update_and_render(f32 dt) {
     // Check if it is time to spawn new pickup items
     m_running_shoes_accum += dt;
     if (m_running_shoes_accum >= RUNNING_SHOES_PICKUP_SPAWN_MS) {
-        Entity* pickup =
-            em->create_entity(PICKUP_RUNNING_SHOES, Vector2{(f32)GetRandomValue(0, 960), (f32)GetRandomValue(0, 540)});
+        Entity* pickup = em->create_entity(
+            PICKUP_RUNNING_SHOES, Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
         pickup->m_color = GREEN;
         pickup->m_time_to_live_ms = 3000.0f;
         m_running_shoes_accum = 0.0f;

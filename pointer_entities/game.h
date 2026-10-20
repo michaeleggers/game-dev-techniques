@@ -2,14 +2,15 @@
 
 #include "common.h"
 #include "entity.h"
+#include "window.h"
 
 class Game {
 
 public:
     Game() = default;
 
-    void init();
-    void update_and_render(f32 dt);
+    void init(Window window);
+    void update_and_render(Window window, f32 dt);
     void shutdown();
 
 private:

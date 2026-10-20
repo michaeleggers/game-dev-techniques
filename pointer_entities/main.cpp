@@ -2,28 +2,31 @@
 #include <stdio.h>
 
 #include "game.h"
+#include "window.h"
 #include <raylib.h>
+
+constexpr int WINDOW_WIDTH = 960;
+constexpr int WINDOW_HEIGHT = 540;
 
 int main(int argc, char** argv) {
 
     // Init System
-    const int screenWidth = 960;
-    const int screenHeight = 540;
-    InitWindow(screenWidth, screenHeight, "Pointer Entities");
+    Window window;
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Pointer Entities");
     SetTargetFPS(60);
     // ToggleFullscreen();
-    int scr_width = GetScreenWidth();
-    int scr_height = GetScreenHeight();
-    SetWindowSize(scr_width, scr_height);
+    window.width = GetScreenWidth();
+    window.height = GetScreenHeight();
+    SetWindowSize(window.width, window.height);
 
     // Create Game
     Game game{};
-    game.init();
+    game.init(window);
 
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
-        game.update_and_render(GetFrameTime() * 1000.0f);
+        game.update_and_render(window, GetFrameTime() * 1000.0f);
     }
 
     // Cleanup
