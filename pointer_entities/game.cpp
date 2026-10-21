@@ -10,14 +10,15 @@
 #include "raymath.h"
 #include "window.h"
 
-#define MAX_ENEMIES 8
+#define MAX_ENEMIES 6
 #define PLAYER_SPEED 2.0f
 #define ENEMY_MIN_SPEED 0.5f
 #define ENEMY_MAX_SPEED 2.0f
-#define TURRET_FIRE_SPEED_MS 1000.0f
+#define TURRET_FIRE_SPEED_MS 1200.0f
 #define TURRET_SIZE 10.0f
 #define TURRET_RANGE 200.0f
 #define PROJECTILE_SPEED 1.0f
+#define PROJECTILE_TIME_TO_LIVE_MS 10000.0f;
 #define RUNNING_SHOES_PICKUP_SPAWN_MS 2000.0f
 #define SHOES_TIME_TO_LIVE 3000.0f
 #define MARGIN 10.0f
@@ -160,8 +161,10 @@ void Game::update_and_render(Window window, f32 dt) {
                     // printf("[TURRET] with id:%d is firing.\n", em->slot(entity));
                     Entity* projectile = em->create_entity(PROJECTILE, entity->m_position);
                     projectile->m_speed = PROJECTILE_SPEED;
+                    projectile->m_target = closest;
                     projectile->m_scale = 5.0f;
                     projectile->m_color = PINK;
+                    projectile->m_time_to_live_ms = PROJECTILE_TIME_TO_LIVE_MS;
                     projectile->m_direction = Vector2Subtract(closest->m_position, entity->m_position);
                     projectile->m_direction = Vector2Normalize(projectile->m_direction);
                     entity->m_accumulator = 0.0f;
@@ -176,7 +179,14 @@ void Game::update_and_render(Window window, f32 dt) {
                 entity->m_position.y >= window.height + MARGIN || entity->m_position.y < -MARGIN) {
                 entity->set_kill_flag();
             } else {
-
+                // Projectile has reached its lifetime?
+                entity->m_time_to_live_ms -= dt;
+                if (entity->m_time_to_live_ms <= 0.0f) {
+                    entity->set_kill_flag();
+                }
+                // Adjust direction
+                entity->m_direction =
+                    Vector2Normalize(Vector2Subtract(entity->m_target->m_position, entity->m_position));
                 // Check if it hit other entity.
                 for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
                     if (!em->is_alive(other_slot)) {
