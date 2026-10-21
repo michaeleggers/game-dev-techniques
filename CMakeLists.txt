@@ -14,7 +14,7 @@ if(MSVC)
     target_compile_definitions(gamedev_compile_options INTERFACE _HAS_EXCEPTIONS=0 _CRT_SECURE_NO_WARNINGS NOMINMAX)
 else()
     target_compile_options(gamedev_compile_options INTERFACE
-        -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+        -Wall -Wextra -Wshadow -Wno-unused-parameter -Wno-missing-field-initializers
         -fno-exceptions -fno-rtti)
 endif()
 

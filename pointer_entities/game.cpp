@@ -10,12 +10,13 @@
 #include "raymath.h"
 #include "window.h"
 
-#define MAX_ENEMIES 3
-#define PLAYER_SPEED 1.5f
+#define MAX_ENEMIES 8
+#define PLAYER_SPEED 2.0f
 #define ENEMY_MIN_SPEED 0.5f
 #define ENEMY_MAX_SPEED 2.0f
 #define TURRET_FIRE_SPEED_MS 1000.0f
 #define TURRET_SIZE 10.0f
+#define TURRET_RANGE 200.0f
 #define PROJECTILE_SPEED 1.0f
 #define RUNNING_SHOES_PICKUP_SPAWN_MS 2000.0f
 #define SHOES_TIME_TO_LIVE 3000.0f
@@ -49,6 +50,7 @@ void Game::init(Window window) {
             ENEMY, Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
         enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
         enemy->m_color = YELLOW;
+        enemy->m_health = 50.0f;
     }
 
     m_turrets[0] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
@@ -56,18 +58,22 @@ void Game::init(Window window) {
     m_turrets[2] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
     m_turrets[3] = em->create_entity(
         TURRET, Vector2{(f32)window.width - TURRET_SIZE - MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
+    m_turrets[4] = em->create_entity(TURRET, Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f});
     m_turrets[0]->m_color = BLACK;
     m_turrets[1]->m_color = BLACK;
     m_turrets[2]->m_color = BLACK;
     m_turrets[3]->m_color = BLACK;
+    m_turrets[4]->m_color = BLACK;
     m_turrets[0]->m_scale = TURRET_SIZE;
     m_turrets[1]->m_scale = TURRET_SIZE;
     m_turrets[2]->m_scale = TURRET_SIZE;
     m_turrets[3]->m_scale = TURRET_SIZE;
+    m_turrets[4]->m_scale = TURRET_SIZE;
     m_turrets[0]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[1]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[2]->m_cooldown = TURRET_FIRE_SPEED_MS;
     m_turrets[3]->m_cooldown = TURRET_FIRE_SPEED_MS;
+    m_turrets[4]->m_cooldown = TURRET_FIRE_SPEED_MS;
 }
 
 void Game::update_and_render(Window window, f32 dt) {
@@ -92,6 +98,11 @@ void Game::update_and_render(Window window, f32 dt) {
 
         // We want the enemies.
         if (entity->m_type == ENEMY) {
+
+            if (entity->m_health <= 0.0f) {
+                entity->set_kill_flag();
+            }
+
             /*
              * This looks like a fix but it isn't.
              * Entity Type is not identity! It just says
@@ -120,37 +131,68 @@ void Game::update_and_render(Window window, f32 dt) {
 
         else if (entity->m_type == TURRET) {
             if (entity->m_accumulator >= entity->m_cooldown) {
-                if (m_player) {
+                // Check nearby entities and fire at them
+                f32 shortest_distance = TURRET_RANGE * TURRET_RANGE;
+                Entity* closest = nullptr;
+                for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
+                    // Don't shoot the dead.
+                    if (!em->is_alive(other_slot)) {
+                        continue;
+                    }
+
+                    Entity* other = em->at(other_slot);
+
+                    // Not interested in other turrets, pickups or bullets.
+                    if (other->m_type == TURRET || other->m_type == PICKUP_RUNNING_SHOES ||
+                        other->m_type == PROJECTILE) {
+                        continue;
+                    }
+
+                    f32 distance = Vector2DistanceSqr(entity->m_position, other->m_position);
+                    if (distance < shortest_distance) {
+                        shortest_distance = distance;
+                        closest = other;
+                    }
+                }
+
+                // FIRE! There is an entity of interest within range.
+                if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
                     // printf("[TURRET] with id:%d is firing.\n", em->slot(entity));
                     Entity* projectile = em->create_entity(PROJECTILE, entity->m_position);
-                    projectile->m_target = m_player;
                     projectile->m_speed = PROJECTILE_SPEED;
                     projectile->m_scale = 5.0f;
                     projectile->m_color = PINK;
-                    projectile->m_direction = Vector2Subtract(projectile->m_target->m_position, entity->m_position);
+                    projectile->m_direction = Vector2Subtract(closest->m_position, entity->m_position);
                     projectile->m_direction = Vector2Normalize(projectile->m_direction);
+                    entity->m_accumulator = 0.0f;
                 }
-                entity->m_accumulator = 0.0f;
             }
         }
 
         else if (entity->m_type == PROJECTILE) {
 
             // Kill projectile if out of bounds.
-            if (entity->m_position.x >= 1000 || entity->m_position.x < -10.0f || entity->m_position.y >= 1000 ||
-                entity->m_position.y < -10) {
+            if (entity->m_position.x >= window.width + MARGIN || entity->m_position.x < -MARGIN ||
+                entity->m_position.y >= window.height + MARGIN || entity->m_position.y < -MARGIN) {
                 entity->set_kill_flag();
             } else {
-                // Check if it hit other thing (the Player).
-                if (entity->m_target) {
-                    if (collision(entity, entity->m_target)) {
-                        // Hit!
 
-                        // Lower health of target.
-                        entity->m_target->m_health -= 10.0f;
+                // Check if it hit other entity.
+                for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
+                    if (!em->is_alive(other_slot)) {
+                        continue;
+                    }
 
-                        // Remove this projectile
-                        entity->set_kill_flag();
+                    Entity* other = em->at(other_slot);
+                    if (other->m_type == ENEMY || other->m_type == PLAYER) {
+                        if (collision(entity, other)) {
+                            // Hit!
+                            // Lower health of target.
+                            other->m_health -= 10.0f;
+                            // Remove this projectile
+                            entity->set_kill_flag();
+                            break; // Break here or bullet affects multiple overlapping entities.
+                        }
                     }
                 }
             }
@@ -232,7 +274,6 @@ void Game::update_and_render(Window window, f32 dt) {
                     entity->m_direction.y = 1;
                 }
                 entity->m_direction = Vector2Normalize(entity->m_direction);
-                entity->m_direction = Vector2Scale(entity->m_direction, entity->m_speed);
 
                 // Logic
                 Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
