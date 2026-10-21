@@ -92,9 +92,28 @@ void Game::update_and_render(Window window, f32 dt) {
 
         // We want the enemies.
         if (entity->m_type == ENEMY) {
+            /*
+             * This looks like a fix but it isn't.
+             * Entity Type is not identity! It just says
+             * what *kind* of entity, not who exactly.
+             * In this case
+             * where there is only one player, it would work.
+             * But as soon as another player is being
+             * spawned this could already go bad.
+             *
+            if (entity->m_target) {
+                if (entity->m_target->m_type != PLAYER) {
+                    entity->m_target = nullptr;
+                    entity->m_speed = 0.0f;
+                }
+            }
+            */
+
             if (m_player) { // if a player exists, start to hunt it if close enough.
                 if (Vector2Distance(m_player->m_position, entity->m_position) <= 60.0f) {
-                    entity->follow(m_player);
+                    if (m_player->m_type == PLAYER) {
+                        entity->follow(m_player);
+                    }
                 }
             }
         }
@@ -173,7 +192,7 @@ void Game::update_and_render(Window window, f32 dt) {
     }
 
     // 2nd pass: update positions.
-    // Check if player should be killed here because
+    // Check if player should be killed explicitly because
     // we need to assing nullptr.
     if (m_player) {
         if (m_player->is_kill_flag_set()) {
