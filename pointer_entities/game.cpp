@@ -16,7 +16,7 @@
 #define ENEMY_MAX_SPEED 2.0f
 #define TURRET_FIRE_SPEED_MS 1200.0f
 #define TURRET_SIZE 10.0f
-#define TURRET_RANGE 200.0f
+#define TURRET_RANGE 350.0f
 #define PROJECTILE_SPEED 1.0f
 #define PROJECTILE_TIME_TO_LIVE_MS 10000.0f;
 #define RUNNING_SHOES_PICKUP_SPAWN_MS 2000.0f
@@ -35,6 +35,14 @@ static bool collision(const Entity* a, const Entity* b) {
     return Vector2DistanceSqr(a->m_position, b->m_position) <= radius2;
 }
 
+static void spawn_enemy(EntityManager* em, int max_pos_x, int max_pos_y) {
+    Entity* enemy =
+        em->create_entity(ENEMY, Vector2{(f32)GetRandomValue(0, max_pos_x), (f32)GetRandomValue(0, max_pos_y)});
+    enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
+    enemy->m_color = YELLOW;
+    enemy->m_health = 50.0f;
+}
+
 void Game::init(Window window) {
 
     EntityManager* em = EntityManager::instance();
@@ -46,12 +54,9 @@ void Game::init(Window window) {
     m_player->m_speed = PLAYER_SPEED;
     m_player->m_color = RED;
 
+    // Spawn enemies within the hole game field.
     for (u32 i = 0; i < MAX_ENEMIES; i++) {
-        Entity* enemy = em->create_entity(
-            ENEMY, Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
-        enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
-        enemy->m_color = YELLOW;
-        enemy->m_health = 50.0f;
+        spawn_enemy(em, window.width, window.height);
     }
 
     m_turrets[0] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
@@ -260,6 +265,10 @@ void Game::update_and_render(Window window, f32 dt) {
         Entity* entity = em->at(i);
 
         if (entity->is_kill_flag_set()) {
+            // For each killed enemy, spawn a new one.
+            if (entity->m_type == ENEMY) {
+                spawn_enemy(em, window.width, window.height);
+            }
             em->kill_entity(entity);
             continue;
         }
@@ -346,14 +355,15 @@ void Game::update_and_render(Window window, f32 dt) {
                 // Draw line from entity to its target if it has one.
                 if (entity->m_target) {
                     // Default target line properties.
-                    Color line_color = GRAY;
-                    f32 line_width = 1.0f;
+                    Color line_color = ORANGE;
+                    f32 line_width = 3.0f;
                     // Give enemies a dedicated target line.
                     if (entity->m_type == ENEMY) {
                         line_color = RED;
                         line_width = 3.0f;
                     }
                     DrawLineEx(entity->m_position, entity->m_target->m_position, line_width, line_color);
+                    DrawCircleLinesV(entity->m_target->m_position, entity->m_target->m_scale + 3.0f, WHITE);
                 }
             }
         }
