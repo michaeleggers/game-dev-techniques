@@ -7,7 +7,12 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(pointer_entities
     main.cpp
     entity.cpp
-    game.cpp
+
+# Game specific code
+    ./game/game.cpp
+    ./game/e_enemy.cpp
+    ./game/e_turret.cpp
+    ./game/e_player.cpp
 )
 
 target_include_directories(pointer_entities PUBLIC

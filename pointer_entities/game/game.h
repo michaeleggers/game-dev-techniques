@@ -1,8 +1,9 @@
 #pragma once
 
-#include "common.h"
-#include "entity.h"
-#include "window.h"
+#include "../common.h"
+#include "../entity.h"
+#include "../window.h"
+
 #include <raylib.h>
 
 class Game {

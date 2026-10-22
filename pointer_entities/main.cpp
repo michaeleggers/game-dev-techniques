@@ -1,9 +1,10 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "game.h"
 #include "window.h"
 #include <raylib.h>
+
+#include "game/game.h"
 
 constexpr int WINDOW_WIDTH = 960;
 constexpr int WINDOW_HEIGHT = 540;

@@ -4,24 +4,17 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "common.h"
-#include "entity.h"
+#include "../common.h"
+#include "../entity.h"
+#include "../window.h"
+
 #include "game.h"
 #include "raymath.h"
-#include "window.h"
 
-#define MAX_ENEMIES 6
-#define PLAYER_SPEED 2.0f
-#define ENEMY_MIN_SPEED 0.5f
-#define ENEMY_MAX_SPEED 2.0f
-#define TURRET_FIRE_SPEED_MS 1200.0f
-#define TURRET_SIZE 10.0f
-#define TURRET_RANGE 350.0f
-#define PROJECTILE_SPEED 1.0f
-#define PROJECTILE_TIME_TO_LIVE_MS 10000.0f;
-#define RUNNING_SHOES_PICKUP_SPAWN_MS 2000.0f
-#define SHOES_TIME_TO_LIVE 3000.0f
-#define MARGIN 10.0f
+#include "e_common.h"
+#include "e_enemy.h"
+#include "e_player.h"
+#include "e_turret.h"
 
 static f32 rand_between(f32 min, f32 max) {
     f32 r = (f32)rand() / (f32)RAND_MAX;
@@ -147,83 +140,6 @@ void Game::update_and_render(Window window, f32 dt) {
     render();
 }
 
-void think_enemy(Entity* self, Entity* player) {
-    if (self->m_health <= 0.0f) {
-        self->set_kill_flag();
-    }
-
-    /*
-     * This looks like a fix but it isn't.
-     * An entity Type is not its identity! (Just like we are all
-     * humans but we are all individuals).
-     * It just says what *kind* of self, not who exactly.
-     * In this case
-     * where there is only one player, it would work.
-     * But as soon as another player is being
-     * spawned this could already go bad.
-     *
-    if (self->m_target) {
-        if (self->m_target->m_type != PLAYER) {
-            self->m_target = nullptr;
-            self->m_speed = 0.0f;
-        }
-    }
-    */
-
-    if (player) { // if a player exists, start to hunt it if close enough.
-        if (Vector2Distance(player->m_position, self->m_position) <= 60.0f) {
-            if (player->m_type == PLAYER) {
-                self->follow(player);
-            }
-        }
-    }
-}
-
-void think_turret(Entity* self, f32 dt) {
-
-    EntityManager* em = EntityManager::instance();
-
-    self->m_accumulator += dt;
-    if (self->m_accumulator >= self->m_cooldown) {
-        // Check nearby entities and fire at them
-        f32 shortest_distance = TURRET_RANGE * TURRET_RANGE;
-        Entity* closest = nullptr;
-        for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
-            // Don't shoot the dead.
-            if (!em->is_alive(other_slot)) {
-                continue;
-            }
-
-            Entity* other = em->at(other_slot);
-
-            // Not interested in other turrets, pickups or bullets.
-            if (other->m_type == TURRET || other->m_type == PICKUP_RUNNING_SHOES || other->m_type == PROJECTILE) {
-                continue;
-            }
-
-            f32 distance = Vector2DistanceSqr(self->m_position, other->m_position);
-            if (distance < shortest_distance) {
-                shortest_distance = distance;
-                closest = other;
-            }
-        }
-
-        // FIRE! There is an entity of interest within range.
-        if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
-            // printf("[TURRET] with id:%d is firing.\n", em->slot(self));
-            Entity* projectile = em->create_entity(PROJECTILE, self->m_position);
-            projectile->m_speed = PROJECTILE_SPEED;
-            projectile->m_target = closest;
-            projectile->m_scale = 5.0f;
-            projectile->m_color = PINK;
-            projectile->m_time_to_live_ms = PROJECTILE_TIME_TO_LIVE_MS;
-            projectile->m_direction = Vector2Subtract(closest->m_position, self->m_position);
-            projectile->m_direction = Vector2Normalize(projectile->m_direction);
-            self->m_accumulator = 0.0f;
-        }
-    }
-}
-
 void think_projectile(Entity* self, f32 dt, int window_width, int window_height) {
 
     EntityManager* em = EntityManager::instance();
@@ -276,18 +192,7 @@ void think_running_shoes(Entity* self, Entity* player, f32 dt) {
     }
 }
 
-void think_player(Entity* self) {
-    // Also let the player *think* (react to hits).
-    if (self) {
-        if (self->m_health <= 0.0f) {
-            self->set_kill_flag();
-        }
-    }
-}
-
 void Game::think(Entity* entity, f32 dt) {
-
-    // We want the enemies.
     if (entity->m_type == PLAYER) {
         think_player(entity);
     } else if (entity->m_type == ENEMY) {
