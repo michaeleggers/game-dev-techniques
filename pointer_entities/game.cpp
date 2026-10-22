@@ -46,6 +46,7 @@ static void spawn_enemy(EntityManager* em, int max_pos_x, int max_pos_y) {
 void Game::init(Window window) {
 
     EntityManager* em = EntityManager::instance();
+    m_window = window;
 
     m_font = LoadFont("./assts/fonts/Inter-Bold.ttf");
 
@@ -95,140 +96,14 @@ void Game::update_and_render(Window window, f32 dt) {
 
     // 1st pass: *think*.
     for (u32 i = 0; i < em->capacity(); i++) {
+
         // Not interested in dead entities.
         if (!em->is_alive(i)) {
             continue;
         }
 
         Entity* entity = em->at(i);
-
-        // We want the enemies.
-        if (entity->m_type == ENEMY) {
-
-            if (entity->m_health <= 0.0f) {
-                entity->set_kill_flag();
-            }
-
-            /*
-             * This looks like a fix but it isn't.
-             * Entity Type is not identity! It just says
-             * what *kind* of entity, not who exactly.
-             * In this case
-             * where there is only one player, it would work.
-             * But as soon as another player is being
-             * spawned this could already go bad.
-             *
-            if (entity->m_target) {
-                if (entity->m_target->m_type != PLAYER) {
-                    entity->m_target = nullptr;
-                    entity->m_speed = 0.0f;
-                }
-            }
-            */
-
-            if (m_player) { // if a player exists, start to hunt it if close enough.
-                if (Vector2Distance(m_player->m_position, entity->m_position) <= 60.0f) {
-                    if (m_player->m_type == PLAYER) {
-                        entity->follow(m_player);
-                    }
-                }
-            }
-        }
-
-        else if (entity->m_type == TURRET) {
-            if (entity->m_accumulator >= entity->m_cooldown) {
-                // Check nearby entities and fire at them
-                f32 shortest_distance = TURRET_RANGE * TURRET_RANGE;
-                Entity* closest = nullptr;
-                for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
-                    // Don't shoot the dead.
-                    if (!em->is_alive(other_slot)) {
-                        continue;
-                    }
-
-                    Entity* other = em->at(other_slot);
-
-                    // Not interested in other turrets, pickups or bullets.
-                    if (other->m_type == TURRET || other->m_type == PICKUP_RUNNING_SHOES ||
-                        other->m_type == PROJECTILE) {
-                        continue;
-                    }
-
-                    f32 distance = Vector2DistanceSqr(entity->m_position, other->m_position);
-                    if (distance < shortest_distance) {
-                        shortest_distance = distance;
-                        closest = other;
-                    }
-                }
-
-                // FIRE! There is an entity of interest within range.
-                if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
-                    // printf("[TURRET] with id:%d is firing.\n", em->slot(entity));
-                    Entity* projectile = em->create_entity(PROJECTILE, entity->m_position);
-                    projectile->m_speed = PROJECTILE_SPEED;
-                    projectile->m_target = closest;
-                    projectile->m_scale = 5.0f;
-                    projectile->m_color = PINK;
-                    projectile->m_time_to_live_ms = PROJECTILE_TIME_TO_LIVE_MS;
-                    projectile->m_direction = Vector2Subtract(closest->m_position, entity->m_position);
-                    projectile->m_direction = Vector2Normalize(projectile->m_direction);
-                    entity->m_accumulator = 0.0f;
-                }
-            }
-        }
-
-        else if (entity->m_type == PROJECTILE) {
-
-            // Kill projectile if out of bounds.
-            if (entity->m_position.x >= window.width + MARGIN || entity->m_position.x < -MARGIN ||
-                entity->m_position.y >= window.height + MARGIN || entity->m_position.y < -MARGIN) {
-                entity->set_kill_flag();
-            } else {
-                // Projectile has reached its lifetime?
-                entity->m_time_to_live_ms -= dt;
-                if (entity->m_time_to_live_ms <= 0.0f) {
-                    entity->set_kill_flag();
-                }
-                // Adjust direction
-                entity->m_direction =
-                    Vector2Normalize(Vector2Subtract(entity->m_target->m_position, entity->m_position));
-                // Check if it hit other entity.
-                for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
-                    if (!em->is_alive(other_slot)) {
-                        continue;
-                    }
-
-                    Entity* other = em->at(other_slot);
-                    if (other->m_type == ENEMY || other->m_type == PLAYER) {
-                        if (collision(entity, other)) {
-                            // Hit!
-                            // Lower health of target.
-                            other->m_health -= 10.0f;
-                            // Remove this projectile
-                            entity->set_kill_flag();
-                            break; // Break here or bullet affects multiple overlapping entities.
-                        }
-                    }
-                }
-            }
-        }
-
-        else if (entity->m_type == PICKUP_RUNNING_SHOES) {
-            // TODO: collide with player and speed them up.
-
-            // If no-one picked it up after some time, despawn.
-            entity->m_time_to_live_ms -= dt;
-            if (entity->m_time_to_live_ms <= 0.0f) {
-                entity->set_kill_flag();
-            } else {
-                if (m_player) {
-                    if (collision(entity, m_player)) {
-                        m_player->m_speed *= entity->m_speed_mult;
-                        entity->set_kill_flag();
-                    }
-                }
-            }
-        }
+        think(entity, dt);
     }
 
     // Check if it is time to spawn new pickup items
@@ -239,13 +114,6 @@ void Game::update_and_render(Window window, f32 dt) {
         pickup->m_color = GREEN;
         pickup->m_time_to_live_ms = SHOES_TIME_TO_LIVE;
         m_running_shoes_accum = 0.0f;
-    }
-
-    // Also let the player *think* (react to hits).
-    if (m_player) {
-        if (m_player->m_health <= 0.0f) {
-            m_player->set_kill_flag();
-        }
     }
 
     // 2nd pass: update positions.
@@ -263,74 +131,236 @@ void Game::update_and_render(Window window, f32 dt) {
         }
 
         Entity* entity = em->at(i);
-
         if (entity->is_kill_flag_set()) {
             // For each killed enemy, spawn a new one.
             if (entity->m_type == ENEMY) {
-                spawn_enemy(em, window.width, window.height);
+                spawn_enemy(em, m_window.width, m_window.height);
             }
             em->kill_entity(entity);
             continue;
         }
 
-        switch (entity->m_type) {
-
-            case PLAYER: {
-                // Reset direction to 0 so that if no key
-                // is being pressed the player stands still.
-                entity->m_direction = Vector2{0.0f, 0.0f};
-
-                if (IsKeyDown(KEY_A)) {
-                    entity->m_direction.x = -1;
-                }
-                if (IsKeyDown(KEY_D)) {
-                    entity->m_direction.x = 1;
-                }
-                if (IsKeyDown(KEY_W)) {
-                    entity->m_direction.y = -1;
-                }
-                if (IsKeyDown(KEY_S)) {
-                    entity->m_direction.y = 1;
-                }
-                entity->m_direction = Vector2Normalize(entity->m_direction);
-
-                // Logic
-                Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
-                entity->m_position = Vector2Add(entity->m_position, velocity);
-            } break;
-
-            case ENEMY: {
-                if (entity->m_target) {
-                    // printf("[ENEMY]: own slot: %d, target slot: %d\n", em->slot(entity), em->slot(entity->m_target));
-                    Vector2 dir = Vector2Subtract(entity->m_target->m_position, entity->m_position);
-                    dir = Vector2Normalize(dir);
-                    entity->m_direction = dir;
-                }
-                Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
-                entity->m_position = Vector2Add(entity->m_position, velocity);
-            } break;
-
-            case TURRET: {
-                entity->m_accumulator += dt;
-            } break;
-
-            case PROJECTILE: {
-                // Move projectile.
-                Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
-                entity->m_position = Vector2Add(entity->m_position, velocity);
-
-            } break;
-
-            case PICKUP_RUNNING_SHOES: {
-            } break;
-
-            default: {
-                assert(false && "Unknown entity type!");
-            }
-        }
+        simulate(entity, dt);
     }
 
     // Rendition
+    render();
+}
+
+void think_enemy(Entity* self, Entity* player) {
+    if (self->m_health <= 0.0f) {
+        self->set_kill_flag();
+    }
+
+    /*
+     * This looks like a fix but it isn't.
+     * An entity Type is not its identity! (Just like we are all
+     * humans but we are all individuals).
+     * It just says what *kind* of self, not who exactly.
+     * In this case
+     * where there is only one player, it would work.
+     * But as soon as another player is being
+     * spawned this could already go bad.
+     *
+    if (self->m_target) {
+        if (self->m_target->m_type != PLAYER) {
+            self->m_target = nullptr;
+            self->m_speed = 0.0f;
+        }
+    }
+    */
+
+    if (player) { // if a player exists, start to hunt it if close enough.
+        if (Vector2Distance(player->m_position, self->m_position) <= 60.0f) {
+            if (player->m_type == PLAYER) {
+                self->follow(player);
+            }
+        }
+    }
+}
+
+void think_turret(Entity* self, f32 dt) {
+
+    EntityManager* em = EntityManager::instance();
+
+    self->m_accumulator += dt;
+    if (self->m_accumulator >= self->m_cooldown) {
+        // Check nearby entities and fire at them
+        f32 shortest_distance = TURRET_RANGE * TURRET_RANGE;
+        Entity* closest = nullptr;
+        for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
+            // Don't shoot the dead.
+            if (!em->is_alive(other_slot)) {
+                continue;
+            }
+
+            Entity* other = em->at(other_slot);
+
+            // Not interested in other turrets, pickups or bullets.
+            if (other->m_type == TURRET || other->m_type == PICKUP_RUNNING_SHOES || other->m_type == PROJECTILE) {
+                continue;
+            }
+
+            f32 distance = Vector2DistanceSqr(self->m_position, other->m_position);
+            if (distance < shortest_distance) {
+                shortest_distance = distance;
+                closest = other;
+            }
+        }
+
+        // FIRE! There is an entity of interest within range.
+        if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
+            // printf("[TURRET] with id:%d is firing.\n", em->slot(self));
+            Entity* projectile = em->create_entity(PROJECTILE, self->m_position);
+            projectile->m_speed = PROJECTILE_SPEED;
+            projectile->m_target = closest;
+            projectile->m_scale = 5.0f;
+            projectile->m_color = PINK;
+            projectile->m_time_to_live_ms = PROJECTILE_TIME_TO_LIVE_MS;
+            projectile->m_direction = Vector2Subtract(closest->m_position, self->m_position);
+            projectile->m_direction = Vector2Normalize(projectile->m_direction);
+            self->m_accumulator = 0.0f;
+        }
+    }
+}
+
+void think_projectile(Entity* self, f32 dt, int window_width, int window_height) {
+
+    EntityManager* em = EntityManager::instance();
+
+    // Kill projectile if out of bounds.
+    if (self->m_position.x >= window_width + MARGIN || self->m_position.x < -MARGIN ||
+        self->m_position.y >= window_height + MARGIN || self->m_position.y < -MARGIN) {
+        self->set_kill_flag();
+    } else {
+        // Projectile has reached its lifetime?
+        self->m_time_to_live_ms -= dt;
+        if (self->m_time_to_live_ms <= 0.0f) {
+            self->set_kill_flag();
+        }
+        // Adjust direction
+        self->m_direction = Vector2Normalize(Vector2Subtract(self->m_target->m_position, self->m_position));
+        // Check if it hit other entity.
+        for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
+            if (!em->is_alive(other_slot)) {
+                continue;
+            }
+
+            Entity* other = em->at(other_slot);
+            if (other->m_type == ENEMY || other->m_type == PLAYER) {
+                if (collision(self, other)) {
+                    // Hit!
+                    // Lower health of target.
+                    other->m_health -= 10.0f;
+                    // Remove this projectile
+                    self->set_kill_flag();
+                    break; // Break here or bullet affects multiple overlapping entities.
+                }
+            }
+        }
+    }
+}
+
+void think_running_shoes(Entity* self, Entity* player, f32 dt) {
+    // If no-one picked it up after some time, despawn.
+    self->m_time_to_live_ms -= dt;
+    if (self->m_time_to_live_ms <= 0.0f) {
+        self->set_kill_flag();
+    } else {
+        if (player) {
+            if (collision(self, player)) {
+                player->m_speed *= self->m_speed_mult;
+                self->set_kill_flag();
+            }
+        }
+    }
+}
+
+void think_player(Entity* self) {
+    // Also let the player *think* (react to hits).
+    if (self) {
+        if (self->m_health <= 0.0f) {
+            self->set_kill_flag();
+        }
+    }
+}
+
+void Game::think(Entity* entity, f32 dt) {
+
+    // We want the enemies.
+    if (entity->m_type == PLAYER) {
+        think_player(entity);
+    } else if (entity->m_type == ENEMY) {
+        think_enemy(entity, m_player);
+    } else if (entity->m_type == TURRET) {
+        think_turret(entity, dt);
+    } else if (entity->m_type == PROJECTILE) {
+        think_projectile(entity, dt, m_window.width, m_window.height);
+    } else if (entity->m_type == PICKUP_RUNNING_SHOES) {
+        think_running_shoes(entity, m_player, dt);
+    }
+}
+
+void Game::simulate(Entity* entity, f32 dt) {
+    switch (entity->m_type) {
+
+        case PLAYER: {
+            // Reset direction to 0 so that if no key
+            // is being pressed the player stands still.
+            entity->m_direction = Vector2{0.0f, 0.0f};
+
+            if (IsKeyDown(KEY_A)) {
+                entity->m_direction.x = -1;
+            }
+            if (IsKeyDown(KEY_D)) {
+                entity->m_direction.x = 1;
+            }
+            if (IsKeyDown(KEY_W)) {
+                entity->m_direction.y = -1;
+            }
+            if (IsKeyDown(KEY_S)) {
+                entity->m_direction.y = 1;
+            }
+            entity->m_direction = Vector2Normalize(entity->m_direction);
+
+            // Logic
+            Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
+            entity->m_position = Vector2Add(entity->m_position, velocity);
+        } break;
+
+        case ENEMY: {
+            if (entity->m_target) {
+                // printf("[ENEMY]: own slot: %d, target slot: %d\n", em->slot(entity), em->slot(entity->m_target));
+                Vector2 dir = Vector2Subtract(entity->m_target->m_position, entity->m_position);
+                dir = Vector2Normalize(dir);
+                entity->m_direction = dir;
+            }
+            Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
+            entity->m_position = Vector2Add(entity->m_position, velocity);
+        } break;
+
+        case TURRET: {
+        } break;
+
+        case PROJECTILE: {
+            // Move projectile.
+            Vector2 velocity = Vector2Scale(entity->m_direction, entity->m_speed);
+            entity->m_position = Vector2Add(entity->m_position, velocity);
+
+        } break;
+
+        case PICKUP_RUNNING_SHOES: {
+        } break;
+
+        default: {
+            assert(false && "Unknown entity type!");
+        }
+    }
+}
+
+void Game::render() {
+    EntityManager* em = EntityManager::instance();
+
     BeginDrawing();
     ClearBackground((Color){90, 100, 255, 0xFF});
     {
