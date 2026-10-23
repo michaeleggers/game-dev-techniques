@@ -7,6 +7,7 @@
 #include "../collision.h"
 #include "../common.h"
 #include "../entity.h"
+#include "../utils.h"
 #include "../window.h"
 
 #include "game.h"
@@ -18,12 +19,6 @@
 #include "e_player.h"
 #include "e_projectile.h"
 #include "e_turret.h"
-
-static f32 rand_between(f32 min, f32 max) {
-    f32 r = (f32)rand() / (f32)RAND_MAX;
-    f32 range = max - min;
-    return r * range + min;
-}
 
 static void spawn_enemy(EntityManager* em, int max_pos_x, int max_pos_y) {
     Entity* enemy =

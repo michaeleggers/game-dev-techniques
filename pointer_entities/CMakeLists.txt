@@ -5,9 +5,11 @@ project(pointer_entities VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(pointer_entities
+# 'Engine' code
     main.cpp
     entity.cpp
     collision.cpp
+    utils.cpp
 
 # Game specific code
     ./game/game.cpp
