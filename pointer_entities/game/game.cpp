@@ -47,8 +47,6 @@ void Game::init(Window window) {
 
 void Game::update_and_render(Window window, f32 dt) {
 
-    // Logic: If player gets close to enemy, the enemy starts to
-    //        follow the player.
     EntityManager* em = EntityManager::instance();
 
     // Press TAB to draw debug info.

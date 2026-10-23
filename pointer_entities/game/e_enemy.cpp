@@ -14,6 +14,8 @@ Entity* spawn_enemy(int max_pos_x, int max_pos_y) {
     return enemy;
 }
 
+// Logic: If player gets close to enemy, the enemy starts to
+//        follow the player.
 void think_enemy(Entity* self, Entity* player) {
     if (self->m_health <= 0.0f) {
         self->set_kill_flag();
