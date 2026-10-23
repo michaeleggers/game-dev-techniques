@@ -4,6 +4,16 @@
 #include "../entity.h"
 #include "e_common.h"
 
+Entity* spawn_turret(const Vector2& pos) {
+    EntityManager* em = EntityManager::instance();
+    Entity* turret = em->create_entity(TURRET, pos);
+    turret->m_color = BLACK;
+    turret->m_scale = TURRET_SIZE;
+    turret->m_cooldown = TURRET_FIRE_SPEED_MS;
+
+    return turret;
+}
+
 void think_turret(Entity* self, f32 dt) {
 
     EntityManager* em = EntityManager::instance();

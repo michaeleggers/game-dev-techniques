@@ -6,6 +6,8 @@
 
 #include <raylib.h>
 
+#define NUM_TURRETS 5
+
 class Game {
 
 public:
@@ -21,7 +23,7 @@ public:
 
 private:
     Entity* m_player = nullptr;
-    Entity* m_turrets[5] = {nullptr};
+    Entity* m_turrets[NUM_TURRETS] = {nullptr};
     f32 m_running_shoes_accum = 0.0f;
     Font m_font = {};
     bool m_draw_debug = false;

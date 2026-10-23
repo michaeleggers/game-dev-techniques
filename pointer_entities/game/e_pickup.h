@@ -3,4 +3,5 @@
 #include "../common.h"
 #include "../entity.h"
 
-void think_running_shoes(Entity* self, Entity* player, f32 dt);
+Entity* spawn_pickup(const Vector2& pos);
+void think_pickup(Entity* self, Entity* player, f32 dt);

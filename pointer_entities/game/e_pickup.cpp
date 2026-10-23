@@ -1,9 +1,19 @@
 #include "e_pickup.h"
+#include "e_common.h"
 
 #include "../collision.h"
 #include "../entity.h"
 
-void think_running_shoes(Entity* self, Entity* player, f32 dt) {
+Entity* spawn_pickup(const Vector2& pos) {
+    EntityManager* em = EntityManager::instance();
+    Entity* pickup = em->create_entity(PICKUP_RUNNING_SHOES, pos);
+    pickup->m_color = GREEN;
+    pickup->m_time_to_live_ms = SHOES_TIME_TO_LIVE;
+
+    return pickup;
+}
+
+void think_pickup(Entity* self, Entity* player, f32 dt) {
     // If no-one picked it up after some time, despawn.
     self->m_time_to_live_ms -= dt;
     if (self->m_time_to_live_ms <= 0.0f) {

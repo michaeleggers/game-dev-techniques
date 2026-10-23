@@ -20,14 +20,6 @@
 #include "e_projectile.h"
 #include "e_turret.h"
 
-static void spawn_enemy(EntityManager* em, int max_pos_x, int max_pos_y) {
-    Entity* enemy =
-        em->create_entity(ENEMY, Vector2{(f32)GetRandomValue(0, max_pos_x), (f32)GetRandomValue(0, max_pos_y)});
-    enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
-    enemy->m_color = YELLOW;
-    enemy->m_health = 50.0f;
-}
-
 void Game::init(Window window) {
 
     EntityManager* em = EntityManager::instance();
@@ -42,30 +34,15 @@ void Game::init(Window window) {
 
     // Spawn enemies within the hole game field.
     for (u32 i = 0; i < MAX_ENEMIES; i++) {
-        spawn_enemy(em, window.width, window.height);
+        spawn_enemy(window.width, window.height);
     }
 
-    m_turrets[0] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
-    m_turrets[1] = em->create_entity(TURRET, Vector2{(f32)window.width - TURRET_SIZE - MARGIN, TURRET_SIZE + MARGIN});
-    m_turrets[2] = em->create_entity(TURRET, Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
-    m_turrets[3] = em->create_entity(
-        TURRET, Vector2{(f32)window.width - TURRET_SIZE - MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
-    m_turrets[4] = em->create_entity(TURRET, Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f});
-    m_turrets[0]->m_color = BLACK;
-    m_turrets[1]->m_color = BLACK;
-    m_turrets[2]->m_color = BLACK;
-    m_turrets[3]->m_color = BLACK;
-    m_turrets[4]->m_color = BLACK;
-    m_turrets[0]->m_scale = TURRET_SIZE;
-    m_turrets[1]->m_scale = TURRET_SIZE;
-    m_turrets[2]->m_scale = TURRET_SIZE;
-    m_turrets[3]->m_scale = TURRET_SIZE;
-    m_turrets[4]->m_scale = TURRET_SIZE;
-    m_turrets[0]->m_cooldown = TURRET_FIRE_SPEED_MS;
-    m_turrets[1]->m_cooldown = TURRET_FIRE_SPEED_MS;
-    m_turrets[2]->m_cooldown = TURRET_FIRE_SPEED_MS;
-    m_turrets[3]->m_cooldown = TURRET_FIRE_SPEED_MS;
-    m_turrets[4]->m_cooldown = TURRET_FIRE_SPEED_MS;
+    m_turrets[0] = spawn_turret(Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
+    m_turrets[1] = spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, TURRET_SIZE + MARGIN});
+    m_turrets[2] = spawn_turret(Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
+    m_turrets[3] =
+        spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
+    m_turrets[4] = spawn_turret(Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f});
 }
 
 void Game::update_and_render(Window window, f32 dt) {
@@ -94,10 +71,7 @@ void Game::update_and_render(Window window, f32 dt) {
     // Check if it is time to spawn new pickup items
     m_running_shoes_accum += dt;
     if (m_running_shoes_accum >= RUNNING_SHOES_PICKUP_SPAWN_MS) {
-        Entity* pickup = em->create_entity(
-            PICKUP_RUNNING_SHOES, Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
-        pickup->m_color = GREEN;
-        pickup->m_time_to_live_ms = SHOES_TIME_TO_LIVE;
+        spawn_pickup(Vector2{(f32)GetRandomValue(0, window.width), (f32)GetRandomValue(0, window.height)});
         m_running_shoes_accum = 0.0f;
     }
 
@@ -119,7 +93,7 @@ void Game::update_and_render(Window window, f32 dt) {
         if (entity->is_kill_flag_set()) {
             // For each killed enemy, spawn a new one.
             if (entity->m_type == ENEMY) {
-                spawn_enemy(em, m_window.width, m_window.height);
+                spawn_enemy(m_window.width, m_window.height);
             }
             em->kill_entity(entity);
             continue;
@@ -142,7 +116,7 @@ void Game::think(Entity* entity, f32 dt) {
     } else if (entity->m_type == PROJECTILE) {
         think_projectile(entity, dt, m_window.width, m_window.height);
     } else if (entity->m_type == PICKUP_RUNNING_SHOES) {
-        think_running_shoes(entity, m_player, dt);
+        think_pickup(entity, m_player, dt);
     }
 }
 

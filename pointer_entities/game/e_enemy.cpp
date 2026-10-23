@@ -1,4 +1,18 @@
+#include "e_common.h"
+
 #include "../entity.h"
+#include "../utils.h"
+
+Entity* spawn_enemy(int max_pos_x, int max_pos_y) {
+    EntityManager* em = EntityManager::instance();
+    Entity* enemy =
+        em->create_entity(ENEMY, Vector2{(f32)GetRandomValue(0, max_pos_x), (f32)GetRandomValue(0, max_pos_y)});
+    enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
+    enemy->m_color = YELLOW;
+    enemy->m_health = 50.0f;
+
+    return enemy;
+}
 
 void think_enemy(Entity* self, Entity* player) {
     if (self->m_health <= 0.0f) {
