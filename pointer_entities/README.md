@@ -16,6 +16,24 @@ In this game two such follow-behaviors are possible:
    entity that gets within their firing range. The bullets
    are homing missiles that lock on to a target.
 
+The `EntityManager` just holds a fixed-sized array of `MAX_ENTITIES`.
+Let's say at timepoint t the array looks like this:
+| Slot | Entity-Type |
+| ----------- | ----------- |
+| 0 | Player |
+| 1 | Enemy | 
+| 2 | Enemy | 
+| 3 | Turret | 
+| 4 | Turret | 
+| 5 | Turret | 
+| 6 | Turret | 
+| 7 | Turret | 
+| 8 | free | 
+| 9 | free | 
+...
+| MAX_ENTITIES-1 | free | 
+
+
 ## References:
 
 This demo is based on the article by Andre Weissflog: 

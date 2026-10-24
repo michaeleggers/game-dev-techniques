@@ -1,5 +1,6 @@
 #include "e_common.h"
 
+#include "../collision.h"
 #include "../entity.h"
 #include "../utils.h"
 
@@ -40,10 +41,20 @@ void think_enemy(Entity* self, Entity* player) {
     */
 
     if (player) { // if a player exists, start to hunt it if close enough.
-        if (Vector2Distance(player->m_position, self->m_position) <= 60.0f) {
-            if (player->m_type == PLAYER) {
-                self->follow(player);
-            }
+
+        // Early out if this is an imposter.
+        if (player->m_type != PLAYER) {
+            return;
+        }
+
+        // If player in range, start to chase them.
+        if (Vector2Distance(player->m_position, self->m_position) <= ENEMY_TRIGGER_DISTANCE) {
+            self->follow(player);
+        }
+
+        // Worse: If enemy touches player. The player looses health:
+        if (collision(self, player)) {
+            player->m_health -= 1.0f;
         }
     }
 }
