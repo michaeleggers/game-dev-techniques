@@ -9,6 +9,7 @@ Entity* spawn_pickup(const Vector2& pos) {
     Entity* pickup = em->create_entity(PICKUP_RUNNING_SHOES, pos);
     pickup->m_color = GREEN;
     pickup->m_time_to_live_ms = SHOES_TIME_TO_LIVE;
+    pickup->m_speed_mult = RUNNING_SHOES_SPEED_BOOST;
 
     return pickup;
 }
