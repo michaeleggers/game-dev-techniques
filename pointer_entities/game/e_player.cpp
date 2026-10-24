@@ -1,7 +1,18 @@
 
 #include "e_player.h"
+#include "e_common.h"
 
 #include "../entity.h"
+
+Entity* spawn_player(const Vector2& pos) {
+    EntityManager* em = EntityManager::instance();
+    Entity* player = em->create_entity(PLAYER);
+    player->m_position = pos;
+    player->m_speed = PLAYER_SPEED;
+    player->m_color = RED;
+
+    return player;
+}
 
 void think_player(Entity* self) {
     // Also let the player *think* (react to hits).

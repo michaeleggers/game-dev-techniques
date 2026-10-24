@@ -22,21 +22,18 @@
 
 void Game::init(Window window) {
 
-    EntityManager* em = EntityManager::instance();
     m_window = window;
-
     m_font = LoadFont("./assts/fonts/Inter-Bold.ttf");
 
-    m_player = em->create_entity(PLAYER);
-    m_player->m_position = Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f};
-    m_player->m_speed = PLAYER_SPEED;
-    m_player->m_color = RED;
+    // Create player
+    m_player = spawn_player(Vector2{window.width / 2.0f - 20.0f, window.height / 2.0f - 20.0f});
 
     // Spawn enemies within the hole game field.
     for (u32 i = 0; i < MAX_ENEMIES; i++) {
         spawn_enemy(window.width, window.height);
     }
 
+    // Create turrets at each corner and one in the middle.
     m_turrets[0] = spawn_turret(Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
     m_turrets[1] = spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, TURRET_SIZE + MARGIN});
     m_turrets[2] = spawn_turret(Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
