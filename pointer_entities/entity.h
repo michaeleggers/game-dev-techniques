@@ -25,8 +25,6 @@ class Entity
 
     void follow(Entity* target);
     void unfollow();
-    void set_kill_flag();
-    bool is_kill_flag_set() const;
 
     Vector2    m_position        = Vector2{ 0.0f, 0.0f };
     Vector2    m_direction       = Vector2{ 0.0f, 0.0f };
@@ -40,7 +38,6 @@ class Entity
     f32        m_health          = 100.0f;
     f32        m_speed_mult      = 1.1f;
     f32        m_time_to_live_ms = 10000.0f;
-    bool       m_kill_flag       = false;
 };
 
 constexpr u32 MAX_ENTITIES         = 256;
@@ -57,7 +54,7 @@ class EntityManager
                           const Vector2& velocity = Vector2{ 0.0f, 0.0f });
 
     void kill_entity(Entity* entity);
-
+    bool flagged_to_kill(Entity* entity);
     void clear_kill_queue();
 
     u32     capacity() const;

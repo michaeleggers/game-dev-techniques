@@ -4,16 +4,17 @@
 #include "../entity.h"
 #include "../utils.h"
 
-constexpr f32 ENEMY_MIN_SPEED = 0.5f;
-constexpr f32 ENEMY_MAX_SPEED = 2.0f;
+constexpr f32 ENEMY_MIN_SPEED        = 0.5f;
+constexpr f32 ENEMY_MAX_SPEED        = 2.0f;
 constexpr f32 ENEMY_TRIGGER_DISTANCE = 60.0f;
 
-Entity* spawn_enemy(int max_pos_x, int max_pos_y) {
+Entity* spawn_enemy(int max_pos_x, int max_pos_y)
+{
     EntityManager* em = EntityManager::instance();
-    Entity* enemy =
-        em->create_entity(ENEMY, Vector2{(f32)GetRandomValue(0, max_pos_x), (f32)GetRandomValue(0, max_pos_y)});
-    enemy->m_speed = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
-    enemy->m_color = YELLOW;
+    Entity*        enemy
+        = em->create_entity(ENEMY, Vector2{ (f32)GetRandomValue(0, max_pos_x), (f32)GetRandomValue(0, max_pos_y) });
+    enemy->m_speed  = rand_between(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED);
+    enemy->m_color  = YELLOW;
     enemy->m_health = 50.0f;
 
     return enemy;
@@ -21,9 +22,11 @@ Entity* spawn_enemy(int max_pos_x, int max_pos_y) {
 
 // Logic: If player gets close to enemy, the enemy starts to
 //        follow the player.
-void think_enemy(Entity* self, Entity* player) {
-    if (self->m_health <= 0.0f) {
-        self->set_kill_flag();
+void think_enemy(Entity* self, Entity* player)
+{
+    if ( self->m_health <= 0.0f )
+    {
+        EntityManager::instance()->kill_entity(self);
     }
 
     /*
@@ -44,20 +47,24 @@ void think_enemy(Entity* self, Entity* player) {
     }
     */
 
-    if (player) { // if a player exists, start to hunt it if close enough.
+    if ( player )
+    { // if a player exists, start to hunt it if close enough.
 
         // Early out if this is an imposter.
-        if (player->m_type != PLAYER) {
+        if ( player->m_type != PLAYER )
+        {
             return;
         }
 
         // If player in range, start to chase them.
-        if (Vector2Distance(player->m_position, self->m_position) <= ENEMY_TRIGGER_DISTANCE) {
+        if ( Vector2Distance(player->m_position, self->m_position) <= ENEMY_TRIGGER_DISTANCE )
+        {
             self->follow(player);
         }
 
         // Worse: If enemy touches player. The player looses health:
-        if (collision(self, player)) {
+        if ( collision(self, player) )
+        {
             player->m_health -= 1.0f;
         }
     }

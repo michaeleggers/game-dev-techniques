@@ -89,7 +89,7 @@ void Game::update_and_render(Window window, f32 dt)
         }
 
         Entity* entity = em->at(i);
-        if ( entity->is_kill_flag_set() )
+        if ( em->flagged_to_kill(entity) )
         {
             // Special case for player because game owns player.
             if ( entity->m_type == PLAYER )
@@ -105,7 +105,7 @@ void Game::update_and_render(Window window, f32 dt)
                 Spawner::instance()->send_spawn_command(spawn_cmd);
             }
 
-            em->kill_entity(entity);
+            // Skip over entities that are flagged for killing.
             continue;
         }
 

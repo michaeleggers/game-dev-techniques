@@ -26,16 +26,6 @@ void Entity::unfollow()
     }
 }
 
-void Entity::set_kill_flag()
-{
-    m_kill_flag = true;
-}
-
-bool Entity::is_kill_flag_set() const
-{
-    return m_kill_flag;
-}
-
 EntityManager* EntityManager::instance()
 {
     static EntityManager instance{};
@@ -77,6 +67,13 @@ void EntityManager::kill_entity(Entity* entity)
     assert(!m_pending_kills[ slot_number ]); // Check for double-kill!
     m_pending_kills[ slot_number ] = true;
     m_kill_queue[ m_kill_count++ ] = slot_number;
+}
+
+bool EntityManager::flagged_to_kill(Entity* entity)
+{
+    u32 slot = (u32)(entity - &m_entities[ 0 ]);
+    assert(slot < MAX_ENTITIES);
+    return m_pending_kills[ slot ];
 }
 
 void EntityManager::clear_kill_queue()
