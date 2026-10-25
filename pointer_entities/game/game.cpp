@@ -108,6 +108,7 @@ void Game::update_and_render(Window window, f32 dt)
                     = { .type = ENEMY, .max_pos_x = m_window.width, .max_pos_y = m_window.height };
                 Spawner::instance()->send_spawn_command(spawn_cmd);
             }
+
             em->kill_entity(entity);
             continue;
         }

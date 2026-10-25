@@ -9,7 +9,7 @@ class Spawner
     {
         EntityType type        = NULL_ENTITY;
         Vector2    position    = Vector2{ 0.0f, 0.0f };
-        u32        target_slot = 0;
+        u32        target_slot = MAX_ENTITIES; // Init with illegal slot.
         int        max_pos_x   = 0;
         int        max_pos_y   = 0;
     };
