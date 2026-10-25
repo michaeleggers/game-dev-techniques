@@ -3,6 +3,10 @@
 #include "../common.h"
 #include "../entity.h"
 #include "e_common.h"
+#include "e_projectile.h"
+
+constexpr f32 TURRET_FIRE_SPEED_MS = 1200.0f;
+constexpr f32 TURRET_RANGE = 350.0f;
 
 Entity* spawn_turret(const Vector2& pos) {
     EntityManager* em = EntityManager::instance();
@@ -46,14 +50,7 @@ void think_turret(Entity* self, f32 dt) {
         // FIRE! There is an entity of interest within range.
         if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
             // printf("[TURRET] with id:%d is firing.\n", em->slot(self));
-            Entity* projectile = em->create_entity(PROJECTILE, self->m_position);
-            projectile->m_speed = PROJECTILE_SPEED;
-            projectile->m_target = closest;
-            projectile->m_scale = 5.0f;
-            projectile->m_color = PINK;
-            projectile->m_time_to_live_ms = PROJECTILE_TIME_TO_LIVE_MS;
-            projectile->m_direction = Vector2Subtract(closest->m_position, self->m_position);
-            projectile->m_direction = Vector2Normalize(projectile->m_direction);
+            spawn_projectile(self->m_position, closest);
             self->m_accumulator = 0.0f;
         }
     }

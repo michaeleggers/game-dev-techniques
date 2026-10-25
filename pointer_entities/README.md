@@ -56,7 +56,7 @@ Let's say at timepoint t the array looks like this:
 | 9 | free | 
 ...
 | MAX_ENTITIES-1 | free |
-
+ 
 
 
 

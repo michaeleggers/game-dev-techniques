@@ -1,16 +1,8 @@
 #pragma once
 
-#define MAX_ENEMIES 6
-#define PLAYER_SPEED 2.3f
-#define TURRET_FIRE_SPEED_MS 1200.0f
-#define TURRET_SIZE 10.0f
-#define TURRET_RANGE 350.0f
-#define ENEMY_MIN_SPEED 0.5f
-#define ENEMY_MAX_SPEED 2.0f
-#define ENEMY_TRIGGER_DISTANCE 60.0f
-#define PROJECTILE_SPEED 1.0f
-#define PROJECTILE_TIME_TO_LIVE_MS 10000.0f
-#define RUNNING_SHOES_PICKUP_SPAWN_MS 2000.0f
-#define RUNNING_SHOES_SPEED_BOOST 1.05
-#define SHOES_TIME_TO_LIVE 3000.0f
-#define MARGIN 10.0f
+#include "../common.h"
+
+constexpr u32 MAX_ENEMIES = 6;
+constexpr f32 MARGIN = 10.0f;
+constexpr f32 TURRET_SIZE = 10.0f;
+constexpr f32 RUNNING_SHOES_PICKUP_SPAWN_MS = 2000.0f;

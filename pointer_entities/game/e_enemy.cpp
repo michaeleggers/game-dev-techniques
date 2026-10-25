@@ -4,6 +4,10 @@
 #include "../entity.h"
 #include "../utils.h"
 
+constexpr f32 ENEMY_MIN_SPEED = 0.5f;
+constexpr f32 ENEMY_MAX_SPEED = 2.0f;
+constexpr f32 ENEMY_TRIGGER_DISTANCE = 60.0f;
+
 Entity* spawn_enemy(int max_pos_x, int max_pos_y) {
     EntityManager* em = EntityManager::instance();
     Entity* enemy =

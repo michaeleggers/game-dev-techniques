@@ -1,8 +1,8 @@
-
 #include "e_player.h"
-#include "e_common.h"
 
 #include "../entity.h"
+
+constexpr f32 PLAYER_SPEED = 2.3f;
 
 Entity* spawn_player(const Vector2& pos) {
     EntityManager* em = EntityManager::instance();

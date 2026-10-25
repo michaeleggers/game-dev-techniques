@@ -1,8 +1,25 @@
 #include "e_projectile.h"
-
 #include "e_common.h"
 
 #include "../collision.h"
+
+constexpr f32 PROJECTILE_SPEED = 1.0f;
+constexpr f32 PROJECTILE_TIME_TO_LIVE_MS = 10000.0f;
+
+Entity* spawn_projectile(const Vector2& pos, Entity* target) {
+    EntityManager* em = EntityManager::instance();
+
+    Entity* projectile = em->create_entity(PROJECTILE, pos);
+    projectile->m_speed = PROJECTILE_SPEED;
+    projectile->m_target = target;
+    projectile->m_scale = 5.0f;
+    projectile->m_color = PINK;
+    projectile->m_time_to_live_ms = PROJECTILE_TIME_TO_LIVE_MS;
+    projectile->m_direction = Vector2Subtract(target->m_position, projectile->m_position);
+    projectile->m_direction = Vector2Normalize(projectile->m_direction);
+
+    return projectile;
+}
 
 void think_projectile(Entity* self, f32 dt, int window_width, int window_height) {
 
