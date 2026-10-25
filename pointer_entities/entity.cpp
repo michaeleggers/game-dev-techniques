@@ -87,3 +87,7 @@ u32 EntityManager::slot(const Entity* entity) const {
     u32 index = (u32)(entity - &m_entities[0]);
     return index;
 }
+
+void EntityManager::send_spawn_command(const SpawnCommand& command) {
+    m_spawn_commands[m_spawn_count++] = command;
+}

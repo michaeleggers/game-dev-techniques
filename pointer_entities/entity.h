@@ -34,14 +34,22 @@ public:
 };
 
 constexpr u32 MAX_ENTITIES = 256;
+constexpr u32 MAX_SPAWNS_PER_FRAME = 128;
 
 class EntityManager {
+
+    struct SpawnCommand {
+        EntityType type;
+        Vector2 position;
+        u32 target_slot;
+    };
 
 public:
     static EntityManager* instance();
 
     Entity* create_entity(EntityType type, const Vector2& position = Vector2{0.0f, 0.0f},
                           const Vector2& velocity = Vector2{0.0f, 0.0f});
+    void send_spawn_command(const SpawnCommand& command);
 
     void kill_entity(Entity* entity);
 
@@ -59,4 +67,7 @@ private:
     //          if EntityManager was to become a real
     //          Ctor this array would not default to 0 (=false).
     bool m_alive[MAX_ENTITIES] = {};
+
+    SpawnCommand m_spawn_commands[MAX_SPAWNS_PER_FRAME];
+    u32 m_spawn_count = 0;
 };

@@ -6,8 +6,6 @@
 
 #include <raylib.h>
 
-#define NUM_TURRETS 5
-
 class Game {
 
 public:
