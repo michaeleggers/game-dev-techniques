@@ -115,6 +115,8 @@ void Game::update_and_render(Window window, f32 dt)
         simulate(entity, dt);
     }
 
+    em->clear_kill_queue();
+
     Spawner::instance()->flush_spawns();
 
     // Rendition
