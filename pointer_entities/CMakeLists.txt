@@ -18,6 +18,7 @@ add_executable(pointer_entities
     ./game/e_player.cpp
     ./game/e_projectile.cpp
     ./game/e_pickup.cpp
+    ./game/g_spawn.cpp
 )
 
 target_include_directories(pointer_entities PUBLIC

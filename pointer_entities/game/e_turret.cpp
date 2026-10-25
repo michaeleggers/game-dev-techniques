@@ -4,6 +4,7 @@
 #include "../entity.h"
 #include "e_common.h"
 #include "e_projectile.h"
+#include "g_spawn.h"
 
 constexpr f32 TURRET_FIRE_SPEED_MS = 1200.0f;
 constexpr f32 TURRET_RANGE = 350.0f;
@@ -50,7 +51,12 @@ void think_turret(Entity* self, f32 dt) {
         // FIRE! There is an entity of interest within range.
         if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
             // printf("[TURRET] with id:%d is firing.\n", em->slot(self));
-            spawn_projectile(self->m_position, closest);
+            Spawner::SpawnCommand spawn_cmd = {
+                .type = PROJECTILE,
+                .position = self->m_position,
+                .target = closest,
+            };
+            Spawner::instance()->send_spawn_command(spawn_cmd);
             self->m_accumulator = 0.0f;
         }
     }
