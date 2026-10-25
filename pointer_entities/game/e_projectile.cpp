@@ -21,13 +21,13 @@ Entity* spawn_projectile(const Vector2& pos, Entity* target) {
     return projectile;
 }
 
-void think_projectile(Entity* self, f32 dt, int window_width, int window_height) {
+void think_projectile(Entity* self, f32 dt, const Window& window) {
 
     EntityManager* em = EntityManager::instance();
 
     // Kill projectile if out of bounds.
-    if (self->m_position.x >= window_width + MARGIN || self->m_position.x < -MARGIN ||
-        self->m_position.y >= window_height + MARGIN || self->m_position.y < -MARGIN) {
+    if (self->m_position.x >= window.width + MARGIN || self->m_position.x < -MARGIN ||
+        self->m_position.y >= window.height + MARGIN || self->m_position.y < -MARGIN) {
         self->set_kill_flag();
     } else {
         // Projectile has reached its lifetime?

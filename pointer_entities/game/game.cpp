@@ -109,7 +109,7 @@ void Game::think(Entity* entity, f32 dt) {
     } else if (entity->m_type == TURRET) {
         think_turret(entity, dt);
     } else if (entity->m_type == PROJECTILE) {
-        think_projectile(entity, dt, m_window.width, m_window.height);
+        think_projectile(entity, dt, m_window);
     } else if (entity->m_type == PICKUP_RUNNING_SHOES) {
         think_pickup(entity, m_player, dt);
     }
