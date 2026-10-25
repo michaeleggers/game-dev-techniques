@@ -1,4 +1,4 @@
-#include "e_common.h"
+#include "e_enemy.h"
 
 #include "../collision.h"
 #include "../entity.h"
