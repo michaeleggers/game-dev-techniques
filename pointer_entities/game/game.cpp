@@ -80,17 +80,7 @@ void Game::update_and_render(Window window, f32 dt)
         m_running_shoes_accum = 0.0f;
     }
 
-    // 2nd pass: update positions.
-    // Check if player should be killed explicitly because
-    // we need to assing nullptr.
-    if ( m_player )
-    {
-        if ( m_player->is_kill_flag_set() )
-        {
-            em->kill_entity(m_player);
-            m_player = nullptr;
-        }
-    }
+    // 2nd pass: update positions / kill entities.
     for ( u32 i = 0; i < em->capacity(); i++ )
     {
         if ( !em->is_alive(i) )
@@ -101,6 +91,12 @@ void Game::update_and_render(Window window, f32 dt)
         Entity* entity = em->at(i);
         if ( entity->is_kill_flag_set() )
         {
+            // Special case for player because game owns player.
+            if ( entity->m_type == PLAYER )
+            {
+                m_player = nullptr;
+            }
+
             // For each killed enemy, spawn a new one.
             if ( entity->m_type == ENEMY )
             {

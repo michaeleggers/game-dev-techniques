@@ -73,10 +73,9 @@ void EntityManager::kill_entity(Entity* entity)
     u32 slot_number = (u32)(entity - &m_entities[ 0 ]);
 
     assert(slot_number < MAX_ENTITIES);
-    // Detect  double-free: If an entity was killed in that slot
-    // before its alive flag should be false!
     assert(m_alive[ slot_number ]);
-
+    assert(!m_pending_kills[ slot_number ]); // Check for double-kill!
+    m_pending_kills[ slot_number ] = true;
     m_kill_queue[ m_kill_count++ ] = slot_number;
 }
 
@@ -86,7 +85,8 @@ void EntityManager::clear_kill_queue()
     {
         u32 slot = m_kill_queue[ i ];
         printf("[Entity Manager]: Killing entity at index: %d\n", slot);
-        m_alive[ slot ] = false;
+        m_alive[ slot ]         = false;
+        m_pending_kills[ slot ] = false;
     }
 
     m_kill_count = 0;

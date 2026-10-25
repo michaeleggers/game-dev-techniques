@@ -73,7 +73,8 @@ class EntityManager
     // ` = {}`: Not strictly necessary at this point. But
     //          if EntityManager was to become a real
     //          Ctor this array would not default to 0 (=false).
-    bool m_alive[ MAX_ENTITIES ]      = {};
-    u32  m_kill_queue[ MAX_ENTITIES ] = {};
-    u32  m_kill_count                 = 0;
+    bool m_alive[ MAX_ENTITIES ]         = {};
+    u32  m_kill_queue[ MAX_ENTITIES ]    = {};
+    bool m_pending_kills[ MAX_ENTITIES ] = {};
+    u32  m_kill_count                    = 0;
 };
