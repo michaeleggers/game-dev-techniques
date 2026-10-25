@@ -7,55 +7,60 @@
 #include "g_spawn.h"
 
 constexpr f32 TURRET_FIRE_SPEED_MS = 1200.0f;
-constexpr f32 TURRET_RANGE = 350.0f;
+constexpr f32 TURRET_RANGE         = 350.0f;
 
-Entity* spawn_turret(const Vector2& pos) {
-    EntityManager* em = EntityManager::instance();
-    Entity* turret = em->create_entity(TURRET, pos);
-    turret->m_color = BLACK;
-    turret->m_scale = TURRET_SIZE;
-    turret->m_cooldown = TURRET_FIRE_SPEED_MS;
+Entity* spawn_turret(const Vector2& pos)
+{
+    EntityManager* em     = EntityManager::instance();
+    Entity*        turret = em->create_entity(TURRET, pos);
+    turret->m_color       = BLACK;
+    turret->m_scale       = TURRET_SIZE;
+    turret->m_cooldown    = TURRET_FIRE_SPEED_MS;
 
     return turret;
 }
 
-void think_turret(Entity* self, f32 dt) {
+void think_turret(Entity* self, f32 dt)
+{
 
     EntityManager* em = EntityManager::instance();
 
     self->m_accumulator += dt;
-    if (self->m_accumulator >= self->m_cooldown) {
+    if ( self->m_accumulator >= self->m_cooldown )
+    {
         // Check nearby entities and fire at them
-        f32 shortest_distance = TURRET_RANGE * TURRET_RANGE;
-        Entity* closest = nullptr;
-        for (u32 other_slot = 0; other_slot < em->capacity(); other_slot++) {
+        f32     shortest_distance = TURRET_RANGE * TURRET_RANGE;
+        Entity* closest           = nullptr;
+        for ( u32 other_slot = 0; other_slot < em->capacity(); other_slot++ )
+        {
             // Don't shoot the dead.
-            if (!em->is_alive(other_slot)) {
+            if ( !em->is_alive(other_slot) )
+            {
                 continue;
             }
 
             Entity* other = em->at(other_slot);
 
             // Not interested in other turrets, pickups or bullets.
-            if (other->m_type == TURRET || other->m_type == PICKUP_RUNNING_SHOES || other->m_type == PROJECTILE) {
+            if ( other->m_type == TURRET || other->m_type == PICKUP_RUNNING_SHOES || other->m_type == PROJECTILE )
+            {
                 continue;
             }
 
             f32 distance = Vector2DistanceSqr(self->m_position, other->m_position);
-            if (distance < shortest_distance) {
+            if ( distance < shortest_distance )
+            {
                 shortest_distance = distance;
-                closest = other;
+                closest           = other;
             }
         }
 
         // FIRE! There is an entity of interest within range.
-        if (closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE)) {
+        if ( closest && (shortest_distance < TURRET_RANGE * TURRET_RANGE) )
+        {
             // printf("[TURRET] with id:%d is firing.\n", em->slot(self));
-            Spawner::SpawnCommand spawn_cmd = {
-                .type = PROJECTILE,
-                .position = self->m_position,
-                .target = closest,
-            };
+            Spawner::SpawnCommand spawn_cmd
+                = { .type = PROJECTILE, .position = self->m_position, .target_slot = em->slot(closest) };
             Spawner::instance()->send_spawn_command(spawn_cmd);
             self->m_accumulator = 0.0f;
         }
