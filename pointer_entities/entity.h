@@ -4,11 +4,11 @@
 #include <raylib.h>
 #include <raymath.h>
 
-enum EntityType { PLAYER, ENEMY, TURRET, PROJECTILE, PICKUP_RUNNING_SHOES };
+enum EntityType { NULL_ENTITY = 0, PLAYER, ENEMY, TURRET, PROJECTILE, PICKUP_RUNNING_SHOES };
 
 class Entity {
 public:
-    Entity() = default; // trivial Ctor. Does nothing.
+    Entity() = default;
     Entity(EntityType type, const Vector2& position = Vector2{0.0f, 0.0f},
            const Vector2& direction = Vector2{0.0f, 0.0f});
     ~Entity() = default;
@@ -18,10 +18,10 @@ public:
     void set_kill_flag();
     bool is_kill_flag_set() const;
 
-    Vector2 m_position;
-    Vector2 m_direction;
-    Entity* m_target;
-    EntityType m_type;
+    Vector2 m_position = Vector2{0.0f, 0.0f};
+    Vector2 m_direction = Vector2{0.0f, 0.0f};
+    Entity* m_target = nullptr;
+    EntityType m_type = NULL_ENTITY;
     f32 m_speed = 0.0f;
     Color m_color = YELLOW;
     f32 m_cooldown = 0.0f;
