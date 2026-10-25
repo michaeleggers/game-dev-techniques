@@ -34,12 +34,11 @@ void Game::init(Window window) {
     }
 
     // Create turrets at each corner and one in the middle.
-    m_turrets[0] = spawn_turret(Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
-    m_turrets[1] = spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, TURRET_SIZE + MARGIN});
-    m_turrets[2] = spawn_turret(Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
-    m_turrets[3] =
-        spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
-    m_turrets[4] = spawn_turret(Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f});
+    spawn_turret(Vector2{TURRET_SIZE + MARGIN, TURRET_SIZE + MARGIN});
+    spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, TURRET_SIZE + MARGIN});
+    spawn_turret(Vector2{TURRET_SIZE + MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
+    spawn_turret(Vector2{(f32)window.width - TURRET_SIZE - MARGIN, (f32)window.height - TURRET_SIZE - MARGIN});
+    spawn_turret(Vector2{(f32)window.width / 2.0f, (f32)window.height / 2.0f});
 }
 
 void Game::update_and_render(Window window, f32 dt) {
