@@ -102,16 +102,31 @@ void Game::update_and_render(Window window, f32 dt) {
 }
 
 void Game::think(Entity* entity, f32 dt) {
-    if (entity->m_type == PLAYER) {
-        think_player(entity);
-    } else if (entity->m_type == ENEMY) {
-        think_enemy(entity, m_player);
-    } else if (entity->m_type == TURRET) {
-        think_turret(entity, dt);
-    } else if (entity->m_type == PROJECTILE) {
-        think_projectile(entity, dt, m_window);
-    } else if (entity->m_type == PICKUP_RUNNING_SHOES) {
-        think_pickup(entity, m_player, dt);
+
+    switch (entity->m_type) {
+        case PLAYER: {
+            think_player(entity);
+        } break;
+
+        case ENEMY: {
+            think_enemy(entity, m_player);
+        } break;
+
+        case TURRET: {
+            think_turret(entity, dt);
+        } break;
+
+        case PROJECTILE: {
+            think_projectile(entity, dt, m_window);
+        } break;
+
+        case PICKUP_RUNNING_SHOES: {
+            think_pickup(entity, m_player, dt);
+        } break;
+
+        default: {
+            assert(false && "Unknown entity type.");
+        }
     }
 }
 
