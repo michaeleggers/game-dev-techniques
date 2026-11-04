@@ -4,13 +4,19 @@ project(pointer_entities VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(pointer_entities
-# 'Engine' code
-    ./engine/main.cpp
+add_library(engine
+# Engine code
     ./engine/entity.cpp
     ./engine/collision.cpp
     ./engine/utils.cpp
+)
 
+add_executable(engine_runtime
+# Engine executable that implements the engine
+    ./engine/main.cpp
+)
+
+add_library(pointer_entities
 # Game specific code
     ./game/game.cpp
     ./game/e_enemy.cpp
@@ -21,10 +27,10 @@ add_executable(pointer_entities
     ./game/g_spawn.cpp
 )
 
-target_include_directories(pointer_entities PUBLIC
+include_directories(pointer_entities PUBLIC
     ../dependencies/raylib/src/
 )
 
-target_link_libraries(pointer_entities
-    PRIVATE raylib gamedev_compile_options
-)
+# link_libraries(PRIVATE raylib gamedev_compile_options)
+
+target_link_libraries(engine_runtime PRIVATE raylib gamedev_compile_options engine pointer_entities)
