@@ -9,6 +9,7 @@ add_library(engine
     ./engine/entity.cpp
     ./engine/collision.cpp
     ./engine/utils.cpp
+    ./interface/game_api.cpp
 )
 
 add_executable(engine_runtime
@@ -31,6 +32,6 @@ include_directories(pointer_entities PUBLIC
     ../dependencies/raylib/src/
 )
 
-# link_libraries(PRIVATE raylib gamedev_compile_options)
+# link_libraries(PRIVATE gamedev_compile_options)
 
 target_link_libraries(engine_runtime PRIVATE raylib gamedev_compile_options engine pointer_entities)

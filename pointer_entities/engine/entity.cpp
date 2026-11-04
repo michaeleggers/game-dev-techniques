@@ -64,7 +64,11 @@ void EntityManager::kill_entity(Entity* entity)
 
     assert(slot_number < MAX_ENTITIES);
     assert(m_alive[ slot_number ]);
-    assert(!m_pending_kills[ slot_number ]); // Check for double-kill!
+    if ( m_pending_kills[ slot_number ] ) // Check for double-kill!
+    {
+        fprintf(
+            stderr, "[Entity Manager] ### WARNING ### : Entity at slot %d was alreadyflagged to kill!\n", slot_number);
+    }
     m_pending_kills[ slot_number ] = true;
     m_kill_queue[ m_kill_count++ ] = slot_number;
 }

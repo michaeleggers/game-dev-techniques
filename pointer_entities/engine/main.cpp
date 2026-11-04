@@ -4,7 +4,7 @@
 #include "window.h"
 #include <raylib.h>
 
-#include "../game/game.h"
+#include "../interface/game_api.h"
 
 constexpr int WINDOW_WIDTH  = 960;
 constexpr int WINDOW_HEIGHT = 540;
@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     SetWindowSize(window.width, window.height);
 
     // Create Game
-    Game game{};
+    GameAPI game = get_game_api();
     game.init(window);
 
     // Main game loop
