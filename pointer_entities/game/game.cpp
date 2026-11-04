@@ -53,6 +53,14 @@ void Game::update_and_render(Window window, f32 dt)
         m_draw_debug = !m_draw_debug;
     }
 
+    if ( m_player == nullptr ) // Player is dead.
+    {
+        if ( IsKeyDown(KEY_R) ) // Resurrect player.
+        {
+            m_player = spawn_player(Vector2{ window.width / 2.0f - 20.0f, window.height / 2.0f - 20.0f });
+        }
+    }
+
     // 1st pass: *think*.
     for ( u32 i = 0; i < em->capacity(); i++ )
     {
