@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(pointer_entities
 # 'Engine' code
-    main.cpp
-    entity.cpp
-    collision.cpp
-    utils.cpp
+    ./engine/main.cpp
+    ./engine/entity.cpp
+    ./engine/collision.cpp
+    ./engine/utils.cpp
 
 # Game specific code
     ./game/game.cpp

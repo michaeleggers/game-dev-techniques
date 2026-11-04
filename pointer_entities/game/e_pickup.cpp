@@ -1,8 +1,7 @@
 #include "e_pickup.h"
-#include "e_common.h"
 
-#include "../collision.h"
-#include "../entity.h"
+#include "../engine/collision.h"
+#include "../engine/entity.h"
 
 constexpr f32 RUNNING_SHOES_SPEED_BOOST = 1.05;
 constexpr f32 SHOES_TIME_TO_LIVE        = 3000.0f;

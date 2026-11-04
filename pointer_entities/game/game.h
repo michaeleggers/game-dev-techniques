@@ -1,15 +1,16 @@
 #pragma once
 
-#include "../common.h"
-#include "../entity.h"
-#include "../window.h"
+#include "../engine/common.h"
+#include "../engine/entity.h"
+#include "../engine/window.h"
 
 #include <raylib.h>
 
-class Game {
-
-public:
-    Game() = default;
+class Game
+{
+  public:
+    Game()  = default;
+    ~Game() = default;
 
     void init(Window window);
     void update_and_render(Window window, f32 dt);
@@ -19,10 +20,10 @@ public:
     void simulate(Entity* entity, f32 dt);
     void render();
 
-private:
-    Entity* m_player = nullptr;
-    f32 m_running_shoes_accum = 0.0f;
-    Font m_font = {};
-    bool m_draw_debug = false;
-    Window m_window = {};
+  private:
+    Entity* m_player              = nullptr;
+    f32     m_running_shoes_accum = 0.0f;
+    Font    m_font                = {};
+    bool    m_draw_debug          = false;
+    Window  m_window              = {};
 };

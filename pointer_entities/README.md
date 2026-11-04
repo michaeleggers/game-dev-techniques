@@ -58,7 +58,9 @@ Let's say at timepoint t the array looks like this:
 | MAX_ENTITIES-1 | free |
  
 
+## Architecture
 
+The 'engine' 
 
 ## References:
 

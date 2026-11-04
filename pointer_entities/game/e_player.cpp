@@ -1,6 +1,6 @@
 #include "e_player.h"
 
-#include "../entity.h"
+#include "../engine/entity.h"
 
 constexpr f32 PLAYER_SPEED = 2.3f;
 

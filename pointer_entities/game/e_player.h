@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../entity.h"
+#include "../engine/entity.h"
 
 Entity* spawn_player(const Vector2& pos);
-void think_player(Entity* self);
+void    think_player(Entity* self);

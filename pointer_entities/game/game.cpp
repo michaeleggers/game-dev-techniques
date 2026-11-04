@@ -4,13 +4,10 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "../collision.h"
-#include "../common.h"
-#include "../entity.h"
-#include "../utils.h"
-#include "../window.h"
+#include "../engine/common.h"
+#include "../engine/entity.h"
+#include "../engine/window.h"
 
-#include "game.h"
 #include "raymath.h"
 
 #include "e_common.h"
@@ -20,6 +17,7 @@
 #include "e_projectile.h"
 #include "e_turret.h"
 #include "g_spawn.h"
+#include "game.h"
 
 void Game::init(Window window)
 {

@@ -1,9 +1,7 @@
 #include "e_turret.h"
 
-#include "../common.h"
-#include "../entity.h"
-#include "e_common.h"
-#include "e_projectile.h"
+#include "../engine/common.h"
+#include "../engine/entity.h"
 #include "g_spawn.h"
 
 constexpr f32 TURRET_FIRE_SPEED_MS = 1200.0f;

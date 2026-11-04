@@ -1,8 +1,8 @@
 #include "e_enemy.h"
 
-#include "../collision.h"
-#include "../entity.h"
-#include "../utils.h"
+#include "../engine/collision.h"
+#include "../engine/entity.h"
+#include "../engine/utils.h"
 
 constexpr f32 ENEMY_MIN_SPEED        = 0.5f;
 constexpr f32 ENEMY_MAX_SPEED        = 2.0f;
