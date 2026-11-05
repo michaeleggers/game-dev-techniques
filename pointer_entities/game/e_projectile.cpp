@@ -27,20 +27,19 @@ void think_projectile(Entity* self, f32 dt, const Window& window)
 
     EntityManager* em = EntityManager::instance();
 
-    // Kill projectile if out of bounds.
-    if ( self->m_position.x >= window.width + MARGIN || self->m_position.x < -MARGIN
-         || self->m_position.y >= window.height + MARGIN || self->m_position.y < -MARGIN )
+    self->m_time_to_live_ms -= dt;
+
+    bool out_of_bounds = self->m_position.x >= window.width + MARGIN || self->m_position.x < -MARGIN
+                         || self->m_position.y >= window.height + MARGIN || self->m_position.y < -MARGIN;
+    bool ttl_is_zero = self->m_time_to_live_ms <= 0.0f;
+
+    // Kill projectile if out of bounds or its ttl has expired.
+    if ( ttl_is_zero || out_of_bounds )
     {
         em->kill_entity(self);
     }
     else
     {
-        // Projectile has reached its lifetime?
-        self->m_time_to_live_ms -= dt;
-        if ( self->m_time_to_live_ms <= 0.0f )
-        {
-            em->kill_entity(self);
-        }
         // Adjust direction
         self->m_direction = Vector2Normalize(Vector2Subtract(self->m_target->m_position, self->m_position));
         // Check if it hit other entity.
