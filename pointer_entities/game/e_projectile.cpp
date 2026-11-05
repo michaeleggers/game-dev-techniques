@@ -37,6 +37,9 @@ void think_projectile(Entity* self, f32 dt, const Window& window)
     if ( ttl_is_zero || out_of_bounds )
     {
         em->kill_entity(self);
+        return; // Not strictly needed at this point but if we add more
+        // below it is a good guardrail to not proceed with anything
+        // if ttl or out of bounds is true.
     }
     else
     {
