@@ -6,6 +6,7 @@
 
 #include "../engine/common.h"
 #include "../engine/entity.h"
+#include "../engine/entity_pool.h"
 #include "../engine/window.h"
 
 #include "raymath.h"
@@ -19,8 +20,12 @@
 #include "g_spawn.h"
 #include "game.h"
 
+using EntityManager2 = EntityPool<Entity, 256>;
+
 void Game::init(Window window)
 {
+    EntityManager2 emanager2{};
+    Entity*        foo = emanager2.create();
 
     m_window = window;
     m_font   = LoadFont("./assts/fonts/Inter-Bold.ttf");
