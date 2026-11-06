@@ -1,8 +1,8 @@
 #include "g_collision.h"
 
+#include "../engine/collision.h"
+
 bool collision(const Entity* a, const Entity* b)
 {
-    f32 radius2 = (a->m_scale + b->m_scale);
-    radius2 *= radius2;
-    return Vector2DistanceSqr(a->m_position, b->m_position) <= radius2;
+    return circle_overlap(a->m_position, a->m_scale, b->m_position, b->m_scale);
 }
