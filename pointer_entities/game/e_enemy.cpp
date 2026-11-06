@@ -1,6 +1,7 @@
 #include "e_enemy.h"
 
-#include "../engine/collision.h"
+#include "g_collision.h"
+
 #include "../engine/entity.h"
 #include "../engine/utils.h"
 

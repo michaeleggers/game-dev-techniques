@@ -1,7 +1,7 @@
 #include "e_projectile.h"
 #include "e_common.h"
 
-#include "../engine/collision.h"
+#include "g_collision.h"
 
 constexpr f32 PROJECTILE_SPEED           = 1.0f;
 constexpr f32 PROJECTILE_TIME_TO_LIVE_MS = 10000.0f;

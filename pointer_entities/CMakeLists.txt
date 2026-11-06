@@ -26,6 +26,7 @@ add_library(pointer_entities
     ./game/e_projectile.cpp
     ./game/e_pickup.cpp
     ./game/g_spawn.cpp
+    ./game/g_collision.cpp
 )
 
 include_directories(pointer_entities PUBLIC

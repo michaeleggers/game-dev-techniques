@@ -1,6 +1,7 @@
 #include "e_pickup.h"
 
-#include "../engine/collision.h"
+#include "g_collision.h"
+
 #include "../engine/entity.h"
 
 constexpr f32 RUNNING_SHOES_SPEED_BOOST = 1.05;
